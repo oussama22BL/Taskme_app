@@ -1,0 +1,12 @@
+.assign-section .tasks-grid { display:flex; gap:10px; flex-wrap:wrap; }
+.task-select { display:flex; flex-direction:column; gap:6px; padding:10px; border:1px solid #eee; border-radius:8px; width:220px; cursor:pointer; }
+.task-select.selected { background: #f0f7ff; border-color:#2f9cff; }
+.task-title { font-weight:700; }
+.assign-controls { margin-top:16px; background:#fff; padding:12px; border-radius:8px; }
+.candidates-list ul { list-style:none; padding:0; }
+.candidate { padding:8px; border-bottom:1px solid #f2f2f2; cursor:pointer; }
+.candidate.selected { background:#e8f3ff; }
+.form-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.form-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
+.btn-primary { background:#2f9cff; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
+.btn-secondary { background:#eee; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }

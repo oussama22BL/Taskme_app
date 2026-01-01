@@ -1,0 +1,44 @@
+.reports-page {
+  padding: 16px;
+}
+
+.reports-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-card {
+  padding: 12px;
+  border: 1px solid #eee;
+  background: #fff;
+  border-radius: 6px;
+}
+
+.reports-generator {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #eee;
+  background: #fff;
+  border-radius: 6px;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.form-row label { width: 120px; }
+
+.form-actions { display:flex; gap:8px; margin-top:12px; }
+
+.rapport-text {
+  background: #f7f7f7;
+  padding: 12px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.users-list ul { margin: 8px 0 0 20px; }

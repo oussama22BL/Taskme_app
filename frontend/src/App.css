@@ -1,42 +1,348 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* Styles principaux */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: #333;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* Page d'accueil */
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-header {
+  background: white;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.home-header-content {
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.home-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 5px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.home-subtitle {
+  color: #666;
+  font-size: 14px;
+}
+
+.home-nav {
+  display: flex;
+  gap: 10px;
+}
+
+.home-nav-btn {
+  padding: 10px 20px;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.home-nav-btn:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.home-main {
+  flex: 1;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Section héros */
+.hero-section {
+  text-align: center;
+  margin-bottom: 60px;
+  padding: 40px 0;
+}
+
+.hero-content h2 {
+  font-size: 36px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.hero-content p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cta-btn {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cta-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.cta-btn.secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Section fonctionnalités */
+.features-section {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin: 60px 0;
+  flex-wrap: wrap;
+}
+
+.feature {
+  text-align: center;
+  max-width: 250px;
+  background: white;
+  border-radius: 12px;
+  padding: 30px 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.feature-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.feature h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.feature p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Section découverte */
+.discover-section {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+  text-align: center;
+  margin-top: 40px;
+}
+
+.discover-section h3 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.preview-cards {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.preview-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  min-width: 220px;
+}
+
+.preview-card:hover {
+  border-color: #667eea;
+  transform: translateY(-5px);
+}
+
+.preview-icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+}
+
+.preview-icon.admin {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.preview-icon.coordinator {
+  background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+  color: white;
+}
+
+.preview-icon.tasks {
+  background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+  color: #212529;
+}
+
+.preview-card h4 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.preview-card p {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.preview-btn {
+  padding: 10px 25px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.preview-btn:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+}
+
+.discover-note {
+  color: #666;
+  font-size: 14px;
+  margin-top: 20px;
+  font-style: italic;
+}
+
+/* Footer */
+.home-footer {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-size: 14px;
+  background: white;
+  margin-top: auto;
+  border-top: 1px solid #e0e0e0;
+}
+
+.home-footer p {
+  margin: 5px 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .home-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .home-title {
+    font-size: 28px;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  
+  .home-nav {
+    width: 100%;
+    justify-content: center;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  
+  .home-nav-btn {
+    flex: 1;
+    max-width: 150px;
+  }
+  
+  .hero-section {
+    padding: 20px 0;
+  }
+  
+  .hero-content h2 {
+    font-size: 28px;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .features-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .feature {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .discover-section {
+    padding: 20px;
+  }
+  
+  .preview-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .preview-card {
+    width: 100%;
+    max-width: 300px;
+  }
 }
