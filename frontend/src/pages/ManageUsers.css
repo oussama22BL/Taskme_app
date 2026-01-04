@@ -1,0 +1,6 @@
+.users-list-section { padding: 1rem; }
+.users-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.users-table th, .users-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid #e6e6e6; text-align: left; }
+.users-table thead th { background: #f7f7fb; }
+.users-table tr:hover { background: #fafafa; }
+.error { color: #d9534f; }
