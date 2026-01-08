@@ -6,6 +6,11 @@ const Task = require('../models/Task');
 //================Affectation semi automatisé================//
 
 exports.findUserByTourDeRole = async (newTask) => {
+    console.log("--- Début Algo Tour de Rôle ---");
+    console.log("Critères Tâche :", { 
+        specs: newTask.specialitesConcernees, 
+        grades: newTask.gradesConcernes 
+    });
     // 1. Filtrer les candidats par spécialité et grade
     let candidates = await User.find({
         specialite: { $in: newTask.specialitesConcernees },

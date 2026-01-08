@@ -62,6 +62,8 @@ exports.login = async (req, res) => {
                 prenom: user.prenom,
                 email: user.email,
                 role: user.role,
+                grade: user.grade,        
+                specialite: user.specialite,
                 token: generateToken(user._id),
             });
         } else {

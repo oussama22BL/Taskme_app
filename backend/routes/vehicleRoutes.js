@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { addVehicle, getVehicles, updateVehicle, deleteVehicle } = require('../controllers/vehicleController');
+const { addVehicle, getVehicles, updateVehicle, deleteVehicle, updateAvailability } = require('../controllers/vehicleController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 // Route pour lister (accessible par tous les connectés)
@@ -10,5 +10,8 @@ router.get('/', protect, getVehicles);
 router.post('/', protect, authorize('admin', 'superAdmin'), addVehicle);
 router.put('/:id', protect, authorize('admin', 'superAdmin'), updateVehicle);
 router.delete('/:id', protect, authorize('admin', 'superAdmin'), deleteVehicle);
+
+
+router.patch('/:id/disponibilite', protect, authorize('admin', 'superAdmin'), updateAvailability);
 
 module.exports = router;

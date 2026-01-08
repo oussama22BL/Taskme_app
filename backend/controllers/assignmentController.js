@@ -22,7 +22,7 @@ exports.createAssignment = async (req, res) => {
         // 2. Gestion du mode Semi-Automatique (Algorithme Tour de Rôle)
         if (mode === 'semi-auto') {
             const chosenUser = await findUserByTourDeRole(task);
-            if (!chosenUser) {
+            if (!chosenUser || chosenUser.role !== 'auditeur') {
                 return res.status(400).json({ 
                     message: "Aucun auditeur disponible (conflit d'horaire ou critères de spécialité/grade non remplis)" 
                 });
@@ -97,12 +97,29 @@ exports.createAssignment = async (req, res) => {
 };
 
 
+// 1. Liste globale avec filtre (pour le Dashboard Admin)
+exports.getAssignments = async (req, res) => {
+    try {
+        const { statut } = req.query;
+        const filter = statut ? { statut } : {};
+        const assignments = await Assignment.find(filter)
+            .populate('taskId')
+            .populate('userId', 'nom prenom email')
+            .populate('vehicleId');
+        res.json(assignments);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 
 // @route   GET /api/assignments/my
 exports.getMyAssignments = async (req, res) => {
     try {
         const assignments = await Assignment.find({ userId: req.user._id })
             .populate('taskId')
+            .populate('vehicleId')
             .sort('-createdAt');
         res.json(assignments);
     } catch (error) {
@@ -144,6 +161,20 @@ exports.respondToAssignment = async (req, res) => {
         });
 
         res.json({ message: `Mission ${statut} avec succès`, assignment });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// 3. Historique global (Traçabilité demandée au point 8)
+exports.getAssignmentHistory = async (req, res) => {
+    try {
+        // On récupère les entrées de la table History liées aux assignments
+        const History = require('../models/History');
+        const history = await History.find({ targetType: 'Assignment' })
+            .populate('performedBy', 'nom prenom role')
+            .sort('-createdAt');
+        res.json(history);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

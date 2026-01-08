@@ -11,23 +11,32 @@ exports.addVehicle = async (req, res) => {
     }
 };
 
-// @desc    Récupérer tous les véhicules
+// Récupérer les véhicules (avec filtre optionnel ?disponibilite=true)
 // @route   GET /api/vehicles
 exports.getVehicles = async (req, res) => {
     try {
-        const vehicles = await Vehicle.find();
+        const { disponibilite } = req.query;
+        const filter = {};
+        if (disponibilite) filter.disponibilite = disponibilite === 'true';
+
+        const vehicles = await Vehicle.find(filter);
         res.json(vehicles);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Mettre à jour un véhicule (ex: changer direction ou disponibilité)
-// @route   PUT /api/vehicles/:id
-exports.updateVehicle = async (req, res) => {
+
+// Mettre à jour la disponibilité (PATCH)
+// @route   PATCH /api/vehicles/:id
+exports.updateAvailability = async (req, res) => {
     try {
-        const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!vehicle) return res.status(404).json({ message: "Véhicule non trouvé" });
+        const { disponibilite } = req.body;
+        const vehicle = await Vehicle.findByIdAndUpdate(
+            req.params.id, 
+            { disponibilite }, 
+            { new: true }
+        );
         res.json(vehicle);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -42,5 +51,24 @@ exports.deleteVehicle = async (req, res) => {
         res.json({ message: "Véhicule supprimé avec succès" });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @route   PUT /api/vehicles/:id
+exports.updateVehicle = async (req, res) => {
+    try {
+        const vehicle = await Vehicle.findByIdAndUpdate(
+            req.params.id, 
+            req.body, 
+            { new: true, runValidators: true }
+        );
+        
+        if (!vehicle) {
+            return res.status(404).json({ message: "Véhicule non trouvé" });
+        }
+        
+        res.json(vehicle);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 };
