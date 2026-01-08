@@ -1,5 +1,6 @@
 ﻿import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { taskService } from "../services/taskService";
+import { useAuth } from './AuthContext';
 
 interface Task {
   id: string;
@@ -52,17 +53,18 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Charger les tâches depuis l'API au montage
+  // Charger les tâches depuis l'API uniquement si l'utilisateur est authentifié
+  const { isAuthenticated, loading: authLoading } = useAuth();
   useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
     let mounted = true;
     const fetchTasks = async () => {
       setLoading(true);
       try {
         const apiTasks = await taskService.getAllTasks();
-        if (mounted) setTasks(apiTasks.map(t => ({ ...t, id: t.id! })) as Task[]);
-      } catch (err) {
+        if (mounted) setTasks(apiTasks.map((t: any) => ({ ...t, id: t.id ?? t._id })) as Task[]);
+      } catch (err: any) {
         console.error("Erreur lors du chargement des tâches:", err);
-        // fallback: garder la liste vide
       } finally {
         if (mounted) setLoading(false);
       }
@@ -70,7 +72,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
 
     fetchTasks();
     return () => { mounted = false; };
-  }, []);
+  }, [isAuthenticated, authLoading]);
 
   const addTask = async (taskData: Omit<Task, "id">) => {
     setLoading(true);

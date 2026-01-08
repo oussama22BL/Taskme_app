@@ -2,6 +2,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ROLE_LABELS } from "../../utils/constants";
+import { useChat } from "../../context/ChatContext";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -15,22 +16,25 @@ const Sidebar = () => {
     { path: "/coordinator", label: "Gestion tâches", icon: "📋", roles: ["superAdmin", "admin", "user"] },
     { path: "/tasks", label: "Mes tâches", icon: "✅", roles: ["user", "admin", "superAdmin"] },
     { path: "/profile", label: "Mon profil", icon: "👤", roles: ["user", "admin", "superAdmin"] },
-    { path: "/vehicles", label: "Véhicules", icon: "🚗", roles: ["superAdmin", "admin"] },
-    { path: "/reports", label: "Rapports", icon: "📈", roles: ["superAdmin", "admin"] },
+    { path: "/vehicles", label: "Véhicules", icon: "🚗", roles: ["superAdmin", "admin", "user"] },
+    { path: "/reports", label: "Rapports", icon: "📈", roles: ["superAdmin", "admin", "user"] },
     { path: "/settings", label: "Paramètres", icon: "⚙️", roles: ["superAdmin"] },
   ];
 
   const userMenu = [
-    { path: "/tasks", label: "Mes tâches", icon: "✅" },
-    { path: "/profile", label: "Mon profil", icon: "👤" },
-    { path: "/history", label: "Historique", icon: "📜" },
-    { path: "/messages", label: "Messages", icon: "💬" },
+    { path: "/tasks", label: "Mes tâches", icon: "✅", roles: ["user", "admin", "superAdmin"] },
+    { path: "/profile", label: "Mon profil", icon: "👤", roles: ["user", "admin", "superAdmin"] },
+    { path: "/history", label: "Historique", icon: "📜", roles: ["user", "admin", "superAdmin"] },
+    { path: "/messages", label: "Messages", icon: "💬", roles: ["user", "admin", "superAdmin"] },
   ];
 
   // Filtrer le menu selon le rôle
-  const menuItems = user?.role === "user" 
-    ? userMenu 
-    : adminMenu.filter(item => item.roles.includes(user?.role || ""));
+  // Admin menu entries are filtered by role; regular users also see the `userMenu` items
+  const menuItems = adminMenu.filter(item => item.roles.includes(user?.role || ""))
+    .concat(user?.role === "user" ? userMenu : []);
+
+
+  const { openWidget } = useChat();
 
   const handleLogout = () => {
     if (confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
@@ -58,15 +62,22 @@ const Sidebar = () => {
         <ul className="sidebar-menu">
           {menuItems.map((item) => (
             <li key={item.path}>
-              <NavLink 
-                to={item.path} 
-                className={({ isActive }) => 
-                  `nav-link ${isActive ? "active" : ""}`
-                }
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
-              </NavLink>
+              {item.path === '/messages' ? (
+                <button className="nav-link button-like" onClick={() => openWidget()}>
+                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-label">{item.label}</span>
+                </button>
+              ) : (
+                <NavLink 
+                  to={item.path} 
+                  className={({ isActive }) => 
+                    `nav-link ${isActive ? "active" : ""}`
+                  }
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-label">{item.label}</span>
+                </NavLink>
+              )}
             </li>
           ))}
         </ul>

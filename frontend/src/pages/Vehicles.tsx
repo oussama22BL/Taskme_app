@@ -2,12 +2,14 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import VehicleForm from "../components/vehicles/VehicleForm";
+import { listVehicles, createVehicle, updateVehicle, deleteVehicle, assignVehicle, releaseVehicle } from "../services/vehicleService";
 import { Vehicle } from "../types/vehicle";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import Footer from "../components/layout/Footer";
 import Modal from "../components/shared/Modal";
 import "./Vehicles.css";
+import { useAuth } from "../context/AuthContext";
 
 // Vehicle type is imported from ../types/vehicle
 
@@ -24,86 +26,7 @@ interface User {
 
 const Vehicles: React.FC = () => {
   // État pour les véhicules
-  const [vehicles, setVehicles] = useState<Vehicle[]>([
-    {
-      id: "1",
-      matricule: "12345-A-56",
-      marque: "Toyota",
-      modele: "Corolla",
-      type: "Berline",
-      carburant: "Essence",
-      annee: 2022,
-      kilometrage: 45000,
-      couleur: "Blanc",
-      etat: 'disponible',
-      affectation: 'individuelle',
-      affecteA: "Ahmed Ali",
-      affecteId: "user1",
-      dateAffectation: "2024-01-15",
-      disponibilite: true,
-      assurance: {
-        numero: "AS123456789",
-        dateExpiration: "2025-06-30",
-        compagnie: "AXA Assurance"
-      },
-      dernierControle: "2024-03-15",
-      prochainControle: "2024-09-15",
-      capacite: 5,
-      options: ["GPS", "Climatisation", "Camera de recul"]
-    },
-    {
-      id: "2",
-      matricule: "98765-B-12",
-      marque: "Mercedes",
-      modele: "Sprinter",
-      type: "Utilitaire",
-      carburant: "Diesel",
-      annee: 2021,
-      kilometrage: 85000,
-      couleur: "Gris",
-      etat: 'en_mission',
-      affectation: 'partagee',
-      affecteA: "Direction Formation",
-      affecteId: "dir1",
-      dateAffectation: "2024-02-01",
-      disponibilite: false,
-      assurance: {
-        numero: "AS987654321",
-        dateExpiration: "2024-12-31",
-        compagnie: "Wafa Assurance"
-      },
-      dernierControle: "2024-02-28",
-      prochainControle: "2024-08-28",
-      capacite: 9,
-      options: ["GPS", "Climatisation"]
-    },
-    {
-      id: "3",
-      matricule: "45678-C-34",
-      marque: "Renault",
-      modele: "Kangoo",
-      type: "Utilitaire",
-      carburant: "Essence",
-      annee: 2023,
-      kilometrage: 25000,
-      couleur: "Bleu",
-      etat: 'disponible',
-      affectation: 'direction',
-      affecteA: "Direction Régionale",
-      affecteId: "dir2",
-      dateAffectation: "2024-01-01",
-      disponibilite: true,
-      assurance: {
-        numero: "AS456789123",
-        dateExpiration: "2025-03-31",
-        compagnie: "RMA Watanya"
-      },
-      dernierControle: "2024-04-10",
-      prochainControle: "2024-10-10",
-      capacite: 5,
-      options: ["Climatisation"]
-    }
-  ]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
   // État pour les utilisateurs disponibles
   const [users] = useState<User[]>([
@@ -179,59 +102,108 @@ const Vehicles: React.FC = () => {
   });
 
   // Gérer la sauvegarde (ajout ou modification) d'un véhicule
-  const handleSaveVehicle = (payload: Partial<Vehicle>) => {
+  const handleSaveVehicle = async (payload: Partial<Vehicle>) => {
     if (!payload.matricule || !payload.marque || !payload.modele) {
       alert("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
-    if (isEditingVehicle && payload.id) {
-      setVehicles(vehicles.map(v => v.id === payload.id ? { ...v, ...(payload as Vehicle) } : v));
-      setIsEditingVehicle(false);
-      alert("Véhicule modifié avec succès !");
-    } else {
-      const vehicle: Vehicle = {
-        ...(payload as Vehicle),
-        id: Date.now().toString(),
-        matricule: payload.matricule!,
-        marque: payload.marque!,
-        modele: payload.modele!,
-        type: payload.type || 'Berline',
-        carburant: payload.carburant || 'Essence',
-        annee: payload.annee || new Date().getFullYear(),
-        kilometrage: payload.kilometrage || 0,
-        couleur: payload.couleur || '',
-        etat: payload.etat || 'disponible',
-        affectation: payload.affectation || 'individuelle',
-        disponibilite: payload.disponibilite ?? (payload.etat === 'disponible'),
-        assurance: payload.assurance || { numero: '', dateExpiration: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], compagnie: '' },
-        dernierControle: payload.dernierControle || new Date().toISOString().split('T')[0],
-        prochainControle: payload.prochainControle || new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0],
-        capacite: payload.capacite || 5,
-        options: payload.options || []
-      };
+    try {
+      if (isEditingVehicle && payload.id) {
+        const updated = await updateVehicle(payload.id, payload as any);
+        const mapped = {
+          id: (updated as any)._id || (updated as any).id,
+          matricule: updated.matricule,
+          marque: updated.marque,
+          modele: updated.modele,
+          type: updated.type || 'Berline',
+          carburant: updated.carburant || 'Essence',
+          annee: updated.annee || new Date().getFullYear(),
+          kilometrage: updated.kilometrage || 0,
+          couleur: updated.couleur || '',
+          etat: updated.etat || 'disponible',
+          affectation: updated.affectation || 'individuelle',
+          affecteA: updated.affecteA,
+          affecteId: updated.affecteId,
+          dateAffectation: updated.dateAffectation ? new Date(updated.dateAffectation).toISOString().split('T')[0] : undefined,
+          dateFinAffectation: updated.dateFinAffectation ? new Date(updated.dateFinAffectation).toISOString().split('T')[0] : undefined,
+          disponibilite: !!updated.disponibilite,
+          assurance: {
+            numero: updated.assurance?.numero || '',
+            dateExpiration: updated.assurance?.dateExpiration ? new Date(updated.assurance.dateExpiration).toISOString().split('T')[0] : new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString().split('T')[0],
+            compagnie: updated.assurance?.compagnie || ''
+          },
+          dernierControle: updated.dernierControle ? new Date(updated.dernierControle).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          prochainControle: updated.prochainControle ? new Date(updated.prochainControle).toISOString().split('T')[0] : new Date(new Date().setMonth(new Date().getMonth()+6)).toISOString().split('T')[0],
+          capacite: updated.capacite || 5,
+          options: updated.options || [],
+          commentaires: updated.commentaires
+        } as Vehicle;
 
-      setVehicles([...vehicles, vehicle]);
-      alert("Véhicule ajouté avec succès !");
+        setVehicles(prev => prev.map(v => v.id === payload.id ? mapped : v));
+        setIsEditingVehicle(false);
+        alert("Véhicule modifié avec succès !");
+      } else {
+        const created = await createVehicle(payload as any);
+        const mapped = {
+          id: (created as any)._id || (created as any).id,
+          matricule: created.matricule,
+          marque: created.marque,
+          modele: created.modele,
+          type: created.type || 'Berline',
+          carburant: created.carburant || 'Essence',
+          annee: created.annee || new Date().getFullYear(),
+          kilometrage: created.kilometrage || 0,
+          couleur: created.couleur || '',
+          etat: created.etat || 'disponible',
+          affectation: created.affectation || 'individuelle',
+          affecteA: created.affecteA,
+          affecteId: created.affecteId,
+          dateAffectation: created.dateAffectation ? new Date(created.dateAffectation).toISOString().split('T')[0] : undefined,
+          dateFinAffectation: created.dateFinAffectation ? new Date(created.dateFinAffectation).toISOString().split('T')[0] : undefined,
+          disponibilite: !!created.disponibilite,
+          assurance: {
+            numero: created.assurance?.numero || '',
+            dateExpiration: created.assurance?.dateExpiration ? new Date(created.assurance.dateExpiration).toISOString().split('T')[0] : new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString().split('T')[0],
+            compagnie: created.assurance?.compagnie || ''
+          },
+          dernierControle: created.dernierControle ? new Date(created.dernierControle).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          prochainControle: created.prochainControle ? new Date(created.prochainControle).toISOString().split('T')[0] : new Date(new Date().setMonth(new Date().getMonth()+6)).toISOString().split('T')[0],
+          capacite: created.capacite || 5,
+          options: created.options || [],
+          commentaires: created.commentaires
+        } as Vehicle;
+
+        setVehicles(prev => [...prev, mapped]);
+        alert("Véhicule ajouté avec succès !");
+      }
+
+      setShowAddModal(false);
+      resetNewVehicle();
+    } catch (err: any) {
+      console.error('Save vehicle error', err);
+      alert(err?.response?.data?.msg || 'Erreur lors de la sauvegarde du véhicule');
     }
-
-    setShowAddModal(false);
-    resetNewVehicle();
   };
 
   // Gérer la modification d'un véhicule
   // Note: editing is handled by reusing the "add" modal with `isEditingVehicle` flag
 
   // Gérer la suppression d'un véhicule
-  const handleDeleteVehicle = (id: string) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce véhicule ?")) {
-      setVehicles(vehicles.filter(v => v.id !== id));
+  const handleDeleteVehicle = async (id: string) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce véhicule ?")) return;
+    try {
+      await deleteVehicle(id);
+      setVehicles(prev => prev.filter(v => v.id !== id));
       alert("Véhicule supprimé avec succès !");
+    } catch (err: any) {
+      console.error('Delete vehicle error', err);
+      alert(err?.response?.data?.msg || 'Erreur lors de la suppression');
     }
   };
 
   // Gérer l'affectation d'un véhicule
-  const handleAffectVehicle = () => {
+  const handleAffectVehicle = async () => {
     if (!selectedVehicle) return;
     
     if (affectationData.type === 'individuelle' && !affectationData.userId) {
@@ -239,49 +211,78 @@ const Vehicles: React.FC = () => {
       return;
     }
 
-    const updatedVehicle: Vehicle = {
-      ...selectedVehicle,
-      affectation: affectationData.type as 'individuelle' | 'partagee' | 'direction',
-      disponibilite: false,
-      etat: 'en_mission',
-      dateAffectation: affectationData.dateDebut,
-      dateFinAffectation: affectationData.dateFin || undefined,
-      affecteA: affectationData.type === 'individuelle' 
-        ? users.find(u => u.id === affectationData.userId)?.prenom + ' ' + users.find(u => u.id === affectationData.userId)?.nom
-        : affectationData.type === 'partagee' ? 'Partagé - ' + users.find(u => u.id === affectationData.userId)?.direction
-        : 'Direction'
-    };
+    try {
+      const body = {
+        type: affectationData.type,
+        userId: affectationData.userId,
+        dateDebut: affectationData.dateDebut,
+        dateFin: affectationData.dateFin,
+        motif: affectationData.motif
+      };
 
-    setVehicles(vehicles.map(v => 
-      v.id === selectedVehicle.id ? updatedVehicle : v
-    ));
-    
-    setShowAffectModal(false);
-    setAffectationData({
-      type: 'individuelle',
-      userId: '',
-      dateDebut: new Date().toISOString().split('T')[0],
-      dateFin: '',
-      motif: ''
-    });
-    
-    alert(`Véhicule ${selectedVehicle.matricule} affecté avec succès !`);
+      const updated = await assignVehicle(selectedVehicle.id, body as any);
+
+      const mapped = {
+        id: (updated as any)._id || (updated as any).id,
+        matricule: updated.matricule,
+        marque: updated.marque,
+        modele: updated.modele,
+        type: updated.type || 'Berline',
+        carburant: updated.carburant || 'Essence',
+        annee: updated.annee || new Date().getFullYear(),
+        kilometrage: updated.kilometrage || 0,
+        couleur: updated.couleur || '',
+        etat: updated.etat || 'en_mission',
+        affectation: updated.affectation || 'individuelle',
+        affecteA: updated.affecteA,
+        affecteId: updated.affecteId,
+        dateAffectation: updated.dateAffectation ? new Date(updated.dateAffectation).toISOString().split('T')[0] : undefined,
+        dateFinAffectation: updated.dateFinAffectation ? new Date(updated.dateFinAffectation).toISOString().split('T')[0] : undefined,
+        disponibilite: !!updated.disponibilite,
+        assurance: updated.assurance || { numero: '', dateExpiration: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], compagnie: '' },
+        dernierControle: updated.dernierControle ? new Date(updated.dernierControle).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        prochainControle: updated.prochainControle ? new Date(updated.prochainControle).toISOString().split('T')[0] : new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0],
+        capacite: updated.capacite || 5,
+        options: updated.options || [],
+        commentaires: updated.commentaires
+      } as Vehicle;
+
+      setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? mapped : v));
+
+      setShowAffectModal(false);
+      setAffectationData({
+        type: 'individuelle',
+        userId: '',
+        dateDebut: new Date().toISOString().split('T')[0],
+        dateFin: '',
+        motif: ''
+      });
+
+      alert(`Véhicule ${selectedVehicle.matricule} affecté avec succès !`);
+    } catch (err: any) {
+      console.error('Affect vehicle error', err);
+      alert(err?.response?.data?.msg || 'Erreur lors de l\'affectation');
+    }
   };
 
   // Libérer un véhicule
-  const handleReleaseVehicle = (id: string) => {
-    setVehicles(vehicles.map(v => 
-      v.id === id ? {
+  const handleReleaseVehicle = async (id: string) => {
+    try {
+      const updated = await releaseVehicle(id);
+      setVehicles(prev => prev.map(v => v.id === id ? {
         ...v,
-        etat: 'disponible',
-        disponibilite: true,
-        affecteA: undefined,
-        affecteId: undefined,
-        dateAffectation: undefined,
-        dateFinAffectation: undefined
-      } : v
-    ));
-    alert("Véhicule libéré avec succès !");
+        etat: updated.etat || 'disponible',
+        disponibilite: !!updated.disponibilite,
+        affecteA: updated.affecteA,
+        affecteId: updated.affecteId,
+        dateAffectation: updated.dateAffectation ? new Date(updated.dateAffectation).toISOString().split('T')[0] : undefined,
+        dateFinAffectation: updated.dateFinAffectation ? new Date(updated.dateFinAffectation).toISOString().split('T')[0] : undefined
+      } : v));
+      alert("Véhicule libéré avec succès !");
+    } catch (err: any) {
+      console.error('Release vehicle error', err);
+      alert(err?.response?.data?.msg || 'Erreur lors de la libération du véhicule');
+    }
   };
 
   // Réinitialiser le formulaire nouveau véhicule
@@ -341,18 +342,48 @@ const Vehicles: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // if AddVehicle navigated here with state.newVehicle, add it
-    const state: any = (location && (location as any).state) || {};
-    if (state && state.newVehicle) {
-      const nv = state.newVehicle as Vehicle;
-      // ensure no duplicate id
-      if (!vehicles.find(v => v.matricule === nv.matricule)) {
-        setVehicles(prev => [...prev, { ...nv, id: Date.now().toString() }]);
-      }
-      // clear history state
-      try { window.history.replaceState({}, document.title); } catch (e) {}
+  // Load vehicles from API and refresh when navigated back from add page
+  const loadVehicles = async () => {
+    try {
+      const res = await listVehicles();
+      const mapped = (res || []).map((v: any) => ({
+        id: v._id || v.id,
+        matricule: v.matricule || '',
+        marque: v.marque || '',
+        modele: v.modele || '',
+        type: v.type || 'Berline',
+        carburant: v.carburant || 'Essence',
+        annee: v.annee || new Date().getFullYear(),
+        kilometrage: v.kilometrage || 0,
+        couleur: v.couleur || '',
+        etat: v.etat || 'disponible',
+        affectation: v.affectation || 'individuelle',
+        affecteA: v.affecteA,
+        affecteId: v.affecteId,
+        dateAffectation: v.dateAffectation ? new Date(v.dateAffectation).toISOString().split('T')[0] : undefined,
+        dateFinAffectation: v.dateFinAffectation ? new Date(v.dateFinAffectation).toISOString().split('T')[0] : undefined,
+        disponibilite: !!v.disponibilite,
+        assurance: {
+          numero: v.assurance?.numero || '',
+          dateExpiration: v.assurance?.dateExpiration ? new Date(v.assurance.dateExpiration).toISOString().split('T')[0] : new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString().split('T')[0],
+          compagnie: v.assurance?.compagnie || ''
+        },
+        dernierControle: v.dernierControle ? new Date(v.dernierControle).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        prochainControle: v.prochainControle ? new Date(v.prochainControle).toISOString().split('T')[0] : new Date(new Date().setMonth(new Date().getMonth()+6)).toISOString().split('T')[0],
+        capacite: v.capacite || 5,
+        options: v.options || [],
+        commentaires: v.commentaires
+      } as Vehicle));
+      setVehicles(mapped);
+    } catch (err) {
+      console.error('Failed to load vehicles', err);
     }
+  };
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    loadVehicles();
   }, [location]);
 
   return (
@@ -369,18 +400,22 @@ const Vehicles: React.FC = () => {
             
             <div className="header-actions">
               <div className="add-vehicle-actions">
-                <button 
-                  className="btn-primary"
-                  onClick={() => setShowAddModal(true)}
-                >
-                  <span className="button-icon">+</span>
-                  Ajouter un véhicule
-                </button>
+                {(user?.role === 'admin' || user?.role === 'superAdmin') && (
+                  <>
+                    <button 
+                      className="btn-primary"
+                      onClick={() => setShowAddModal(true)}
+                    >
+                      <span className="button-icon">+</span>
+                      Ajouter un véhicule
+                    </button>
 
-                <button
-                  className="btn-secondary"
-                  onClick={() => navigate('/vehicles/add')}
-                >Ouvrir page d'ajout</button>
+                    <button
+                      className="btn-secondary"
+                      onClick={() => navigate('/vehicles/add')}
+                    >Ouvrir page d'ajout</button>
+                  </>
+                )}
               </div>
               
               <div className="search-filter">
@@ -531,47 +566,51 @@ const Vehicles: React.FC = () => {
                     <td>{vehicle.kilometrage.toLocaleString()} km</td>
                     <td>
                       <div className="action-buttons">
-                        <button 
-                          className="btn-edit"
-                          onClick={() => {
-                            setSelectedVehicle(vehicle);
-                            setNewVehicle(vehicle);
-                            setIsEditingVehicle(true);
-                            setShowAddModal(true);
-                          }}
-                          title="Modifier"
-                        >
-                          ✏️
-                        </button>
-                        
-                        {vehicle.disponibilite ? (
-                          <button 
-                            className="btn-affect"
-                            onClick={() => {
-                              setSelectedVehicle(vehicle);
-                              setShowAffectModal(true);
-                            }}
-                            title="Affecter"
-                          >
-                            👤
-                          </button>
-                        ) : (
-                          <button 
-                            className="btn-release"
-                            onClick={() => handleReleaseVehicle(vehicle.id)}
-                            title="Libérer"
-                          >
-                            🔓
-                          </button>
+                        {(user?.role === 'admin' || user?.role === 'superAdmin') && (
+                          <>
+                            <button 
+                              className="btn-edit"
+                              onClick={() => {
+                                setSelectedVehicle(vehicle);
+                                setNewVehicle(vehicle);
+                                setIsEditingVehicle(true);
+                                setShowAddModal(true);
+                              }}
+                              title="Modifier"
+                            >
+                              ✏️
+                            </button>
+                            
+                            {vehicle.disponibilite ? (
+                              <button 
+                                className="btn-affect"
+                                onClick={() => {
+                                  setSelectedVehicle(vehicle);
+                                  setShowAffectModal(true);
+                                }}
+                                title="Affecter"
+                              >
+                                👤
+                              </button>
+                            ) : (
+                              <button 
+                                className="btn-release"
+                                onClick={() => handleReleaseVehicle(vehicle.id)}
+                                title="Libérer"
+                              >
+                                🔓
+                              </button>
+                            )}
+                            
+                            <button 
+                              className="btn-delete"
+                              onClick={() => handleDeleteVehicle(vehicle.id)}
+                              title="Supprimer"
+                            >
+                              🗑️
+                            </button>
+                          </>
                         )}
-                        
-                        <button 
-                          className="btn-delete"
-                          onClick={() => handleDeleteVehicle(vehicle.id)}
-                          title="Supprimer"
-                        >
-                          🗑️
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -582,12 +621,14 @@ const Vehicles: React.FC = () => {
             {filteredVehicles.length === 0 && (
               <div className="no-vehicles">
                 <p>Aucun véhicule trouvé</p>
-                <button 
-                  className="btn-primary"
-                  onClick={() => setShowAddModal(true)}
-                >
-                  Ajouter votre premier véhicule
-                </button>
+                {(user?.role === 'admin' || user?.role === 'superAdmin') && (
+                  <button 
+                    className="btn-primary"
+                    onClick={() => setShowAddModal(true)}
+                  >
+                    Ajouter votre premier véhicule
+                  </button>
+                )}
               </div>
             )}
           </div>

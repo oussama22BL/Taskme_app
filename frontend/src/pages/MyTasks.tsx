@@ -8,11 +8,13 @@ import Footer from "../components/layout/Footer";
 import TaskCard from "../components/tasks/TaskCard";
 import Modal from "../components/shared/Modal";
 import "./MyTasks.css";
+import { useChat } from "../context/ChatContext";
 
 const MyTasks = () => {
   const { user } = useAuth();
   const { tasks, updateTaskStatus } = useTasks();
   const { sendDelegationNotification } = useNotifications();
+  const { openWidget } = useChat();
   
   const [showDelegationModal, setShowDelegationModal] = useState(false);
   const [showRefusalModal, setShowRefusalModal] = useState(false);
@@ -20,8 +22,10 @@ const MyTasks = () => {
   const [justification, setJustification] = useState("");
   const [delegateTo, setDelegateTo] = useState("");
 
-  // Simuler les tâches assignées à l'utilisateur
-  const myTasks = tasks.filter(task => task.status === "affectée");
+  // Tâches assignées à l'utilisateur
+  const myTasks = tasks.filter(task => {
+    return task.status === "en_cours" || task.status === "ouverte";
+  });
 
   // Simuler les collègues pour la délégation
   const colleagues = [
@@ -107,6 +111,10 @@ const MyTasks = () => {
           <div className="tasks-header">
             <h1>Mes Tâches</h1>
             <p>Bonjour {user?.prenom}, voici vos tâches assignées</p>
+            <div className="tasks-actions">
+              <button className="btn-create" onClick={() => window.location.href = '/tasks/create'}>Créer une tâche</button>
+              <button className="btn-messages" onClick={() => openWidget()}>Ouvrir le chat</button>
+            </div>
             
             <div className="user-info">
               <div className="info-card">

@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+﻿
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../services/authService";
 import "./Register.css";
@@ -20,7 +21,7 @@ const Register = () => {
         prenom: data.prenom,
         email: data.email,
         password: data.password,
-        role: data.role as "admin" | "user",
+        role: data.role as any,
         specialite: data.specialite,
         grade: data.grade,
       });
@@ -28,7 +29,11 @@ const Register = () => {
       if (resp?.token && resp?.user) {
         localStorage.setItem("token", resp.token);
         localStorage.setItem("user", JSON.stringify(resp.user));
-        if (resp.user.role === "admin" || resp.user.role === "superAdmin") {
+        
+        // ✅ Redirection vers dashboardadmin pour les coordinateurs
+        if (resp.user.role === "coordinator") {
+          navigate("/dashboardadmin");
+        } else if (resp.user.role === "admin" || resp.user.role === "superAdmin") {
           navigate("/admin");
         } else {
           navigate("/tasks");
@@ -65,8 +70,12 @@ const Register = () => {
         <div className="register-form">
           <UserForm
             mode="create"
-            includeRole={!!currentUser}
-            allowedRoles={currentUser?.role === 'superAdmin' ? ["user","admin","superAdmin"] : ["user"]}
+            includeRole={true}
+            allowedRoles={
+              currentUser
+                ? (currentUser.role === 'superAdmin' ? ["user", "admin", "superAdmin", "coordinator"] : (currentUser.role === 'admin' ? ["user", "admin", "coordinator"] : ["user", "coordinator"]))
+                : ["user", "coordinator"]
+            }
             onSubmit={handleRegister}
           />
           {error && <div className="form-error">{error}</div>}

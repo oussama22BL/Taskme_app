@@ -4,14 +4,22 @@ import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import Footer from "../components/layout/Footer";
 import VehicleForm from "../components/vehicles/VehicleForm";
+import { createVehicle } from "../services/vehicleService";
 import "./Vehicles.css";
 
 const AddVehicle = () => {
   const navigate = useNavigate();
 
-  const handleSubmit = (payload: any) => {
-    // Send back to /vehicles with state to be consumed
-    navigate('/vehicles', { state: { newVehicle: payload } });
+  const handleSubmit = async (payload: any) => {
+    try {
+      await createVehicle(payload);
+      alert("Véhicule ajouté avec succès !");
+      // navigate back to vehicles - Vehicles page will reload from API
+      navigate('/vehicles');
+    } catch (err: any) {
+      console.error('Create vehicle error', err);
+      alert(err?.response?.data?.msg || 'Erreur lors de la création du véhicule');
+    }
   };
 
   return (

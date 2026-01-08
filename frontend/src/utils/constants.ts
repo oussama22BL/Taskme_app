@@ -7,6 +7,7 @@ export const APP_VERSION = "1.0.0";
 export const USER_ROLES = {
   SUPER_ADMIN: "superAdmin",
   ADMIN: "admin",
+  COORDINATOR: "coordinator",
   USER: "user",
 } as const;
 
@@ -14,6 +15,7 @@ export const USER_ROLES = {
 export const ROLE_LABELS: Record<string, string> = {
   [USER_ROLES.SUPER_ADMIN]: "Administrateur (SuperAdmin)",
   [USER_ROLES.ADMIN]: "Coordinateur",
+  [USER_ROLES.COORDINATOR]: "Coordinateur",
   [USER_ROLES.USER]: "Utilisateur",
 };
 

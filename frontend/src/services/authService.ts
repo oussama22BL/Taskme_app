@@ -10,7 +10,7 @@ export interface RegisterData {
   prenom: string;
   email: string;
   password: string;
-  role: "admin" | "user";
+  role: "admin" | "user" | "coordinator" | "superAdmin";
   specialite: string;
   grade: string;
 }
@@ -22,7 +22,7 @@ export interface AuthResponse {
     email: string;
     nom: string;
     prenom: string;
-    role: string;
+    role: "admin" | "user" | "coordinator" | "superAdmin";
     specialite: string;
     grade: string;
   };
@@ -41,9 +41,11 @@ export const authService = {
     return response.data;
   },
 
-  // Vérification du token
+  // Vérification du token (envoie explicitement le token en entête si présent)
   verifyToken: async (): Promise<AuthResponse> => {
-    const response = await api.get<AuthResponse>("/auth/verify");
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await api.get<AuthResponse>("/auth/verify", { headers });
     return response.data;
   },
 

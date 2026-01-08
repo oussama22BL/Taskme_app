@@ -1,5 +1,6 @@
 ﻿import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authService } from "../services/authService";
 
 const RegisterPublic = () => {
   const [formData, setFormData] = useState({
@@ -17,21 +18,52 @@ const RegisterPublic = () => {
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setError("");
     if (formData.password !== formData.confirmPassword) {
       setError("Les mots de passe ne correspondent pas");
       return;
     }
-    
-    setSuccess("Compte créé avec succès (simulation)");
-    console.log("Compte créé:", formData);
-    
-    // Redirection après 2 secondes
-    setTimeout(() => {
-      navigate("/login");
-    }, 2000);
+
+    try {
+      const resp = await authService.register({
+        nom: formData.nom,
+        prenom: formData.prenom,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role as 'user' | 'admin' | 'coordinator',
+        specialite: formData.specialite,
+        grade: formData.grade,
+      });
+
+      if (resp?.token && resp?.user) {
+        // Store token & user and redirect
+        localStorage.setItem('token', resp.token);
+        localStorage.setItem('user', JSON.stringify(resp.user));
+        setSuccess('Compte créé et connecté');
+        setTimeout(() => {
+          if (resp.user.role === 'coordinator') {
+            navigate('/admin');
+          } else if (resp.user.role === 'admin' || resp.user.role === 'superAdmin') {
+            navigate('/admin');
+          } else {
+            navigate('/admin');
+          }
+          window.location.reload();
+        }, 800);
+      } else {
+        setError('Réponse inattendue du serveur');
+      }
+    } catch (err: any) {
+      console.error('Erreur création compte:', err);
+      if (err?.response?.status === 403) {
+        setError("Seul un administrateur peut créer des comptes 'admin' ou 'coordinateur'.");
+      } else {
+        const msg = err?.response?.data?.msg || err?.response?.data?.message || err?.message || 'Erreur lors de la création du compte';
+        setError(msg);
+      }
+    }
   };
 
   return (
@@ -42,6 +74,9 @@ const RegisterPublic = () => {
             <h1 className="login-title">TaskMe</h1>
             <p className="login-subtitle">Création de compte</p>
             <p className="login-description">(Version de test - sans authentification)</p>
+            <p className="login-hint" style={{ color: '#555' }}>
+              <strong>Remarque :</strong> Les inscriptions publiques créent des comptes de type <strong>Utilisateur</strong>. Pour obtenir un compte <em>admin</em> ou <em>coordinator</em>, contactez un administrateur.
+            </p>
           </div>
           
           <form onSubmit={handleSubmit} className="login-form">
@@ -105,6 +140,8 @@ const RegisterPublic = () => {
               </div>
             </div>
             
+            {/* Inscription publique: le rôle est forcé à 'user' côté client pour éviter les 403 du serveur */}
+
             <div className="form-actions">
               <button
                 type="button"

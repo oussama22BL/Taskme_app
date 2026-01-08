@@ -1,11 +1,13 @@
-﻿import React, { createContext, useState, useContext, ReactNode } from "react";
+﻿// context/AuthContext.tsx - Version corrigée
+import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import { authService } from "../services/authService";
 
 interface User {
   id: string;
   email: string;
   nom: string;
   prenom: string;
-  role: "superAdmin" | "admin" | "user";
+  role: "superAdmin" | "admin" | "user" | "coordinator";
   specialite: string;
   grade: string;
 }
@@ -13,9 +15,10 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>; // Retourne User
   logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,54 +37,93 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    // Charger l'utilisateur depuis localStorage au démarrage
     const userStr = localStorage.getItem("user");
     return userStr ? JSON.parse(userStr) : null;
   });
   
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [loading, setLoading] = useState(true);
 
-  const login = async (email: string, _password: string) => {
+  useEffect(() => {
+    const checkAuth = async () => {
+      const storedToken = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+
+      if (storedToken && storedUser) {
+        // Mettre en place l'état local avant la vérification pour s'assurer que
+        // l'entête Authorization est présent (si on utilise un intercepteur axios)
+        setToken(storedToken);
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          // ignore parse errors
+        }
+
+        try {
+          // Vérifie si le token est toujours valide
+          const resp = await authService.verifyToken();
+          if (resp?.token && resp?.user) {
+            // Mettre à jour avec la version renvoyée par le serveur (rafraîchir si besoin)
+            setToken(resp.token);
+            setUser(resp.user);
+            localStorage.setItem('token', resp.token);
+            localStorage.setItem('user', JSON.stringify(resp.user));
+          } else {
+            // Token invalide, déconnexion
+            handleCleanup();
+          }
+        } catch (error: any) {
+          console.error("Token verification failed:", error.response?.status, error.message || error);
+          handleCleanup();
+        }
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleCleanup = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+  };
+
+  const login = async (email: string, password: string): Promise<User> => {
     try {
-      // Simulation de connexion - REMPLACER PAR API RÉELLE
-      console.log("Login attempt:", { email, password: "***" });
-      
-      const mockUser: User = {
-        id: "1",
-        email: email || "demo@taskme.com",
-        nom: "Utilisateur",
-        prenom: "Test",
-        role: "admin", // Change selon besoin: "user", "admin", "superAdmin"
-        specialite: "pédagogique",
-        grade: "A",
-      };
-      
-      const mockToken = "mock-jwt-token-" + Date.now();
-
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      localStorage.setItem("token", mockToken);
-      
-      setUser(mockUser);
-      setToken(mockToken);
-      
-      return Promise.resolve();
-    } catch (error) {
+      const resp = await authService.login({ email, password });
+      if (resp?.token && resp?.user) {
+        localStorage.setItem("token", resp.token);
+        localStorage.setItem("user", JSON.stringify(resp.user));
+        setToken(resp.token);
+        setUser(resp.user);
+        return resp.user; // Retourne l'utilisateur pour la navigation
+      }
+      throw new Error('Réponse invalide du serveur');
+    } catch (error: any) {
       console.error("Login error:", error);
-      return Promise.reject(error);
+      throw error;
     }
   };
 
   const logout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
-    setToken(null);
+    authService.logout();
+    handleCleanup();
+    window.location.href = "/login"; // OK pour logout
   };
 
   const isAuthenticated = !!token;
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      login, 
+      logout, 
+      isAuthenticated,
+      loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );

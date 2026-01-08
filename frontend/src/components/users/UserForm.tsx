@@ -12,7 +12,7 @@ interface Props {
   onCancel?: () => void;
 }
 
-const UserForm: React.FC<Props> = ({ initialData = null, mode = 'create', includeRole = true, allowedRoles, onSubmit, onCancel }) => {
+const UserForm: React.FC<Props> = ({ initialData = null, mode = 'create', includeRole = false, allowedRoles, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState<any>({
     nom: '',
     prenom: '',

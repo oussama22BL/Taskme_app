@@ -12,5 +12,18 @@ export default defineConfig({
     },
   },
   plugins: [react()],
+  
+  // AJOUTEZ CETTE SECTION
+  server: {
+    port: 5173,
+    host: true, // pour accéder depuis le réseau
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000', // votre backend
+        changeOrigin: true,
+        secure: false,
+        // rewrite: (path) => path.replace(/^\/api/, '') // Optionnel
+      }
+    }
+  }
 })
-

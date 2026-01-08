@@ -1,5 +1,7 @@
 // NotificationContext.tsx - Gestion centralisée des notifications
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import api from '../services/api';
+import { useAuth } from './AuthContext';
 
 export interface Notification {
   id: string;
@@ -61,6 +63,37 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     localStorage.setItem('notifications', JSON.stringify(notifications));
   }, [notifications]);
 
+  // Charger notifications depuis l'API uniquement si l'utilisateur est authentifié
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
+    let mounted = true;
+
+    const fetchNotifications = async () => {
+      try {
+        const resp = await api.get('/notifications');
+        // adapter le format
+        const serverNotes = resp.data || [];
+        if (!mounted) return;
+        setNotifications(serverNotes.map((n: any) => ({
+          id: n._id,
+          title: n.type || 'Notification',
+          message: n.message || '',
+          type: n.type || 'info',
+          read: !!n.read,
+          createdAt: new Date(n.createdAt),
+          link: n.data?.taskId ? `/tasks` : undefined,
+          metadata: { taskId: n.data?.taskId }
+        })));
+      } catch (err: any) {
+        console.error('Failed to fetch notifications:', err);
+      }
+    };
+
+    fetchNotifications();
+    return () => { mounted = false; };
+  }, [isAuthenticated, authLoading]);
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const addNotification = (notificationData: Omit<Notification, 'id' | 'createdAt' | 'read'>) => {
@@ -88,11 +121,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+    setNotifications(prev => prev.map(notification => notification.id === id ? { ...notification, read: true } : notification));
+    // Notify backend
+    (async () => {
+      try { await api.post(`/notifications/${id}/read`); } catch (e) { /* ignore */ }
+    })();
   };
 
   const markAllAsRead = () => {

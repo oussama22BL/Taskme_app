@@ -1,4 +1,5 @@
-﻿import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+﻿
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { TaskProvider } from "./context/TaskContext";
 import { UiProvider } from "./context/UiContext";
@@ -11,7 +12,10 @@ import CoordinatorTasks from "./pages/CoordinatorTasks";
 import MyTasks from "./pages/MyTasks";
 import Profile from "./pages/Profile";
 import CreateTask from "./pages/CreateTask";
+
+import History from "./pages/History";
 import Reports from "./pages/Reports";
+import CreateReport from "./pages/CreateReport";
 import Vehicles from "./pages/Vehicles";
 import AddVehicle from "./pages/AddVehicle";
 import ManageUsers from "./pages/ManageUsers";
@@ -164,7 +168,7 @@ const HomePage = () => {
 
       {/* Footer */}
       <footer className="home-footer">
-        <p>© 2024 TaskMe - Tous droits réservés</p>
+        <p>© 2026 TaskMe - Tous droits réservés</p>
         <p>Système complet de gestion des tâches collaboratives</p>
       </footer>
     </div>
@@ -202,9 +206,18 @@ function App() {
                     <Route 
                       path="/coordinator" 
                       element={
-                        <ProtectedRoute>
+                        <AdminRoute>
                           <CoordinatorTasks />
-                        </ProtectedRoute>
+                        </AdminRoute>
+                      } 
+                    />
+                    {/* Alias for legacy or alternate path used in some redirects */}
+                    <Route 
+                      path="/dashboardadmin" 
+                      element={
+                        <AdminRoute>
+                          <CoordinatorTasks />
+                        </AdminRoute>
                       } 
                     />
                     
@@ -226,12 +239,22 @@ function App() {
                       }
                     />
 
+
+                    <Route
+                      path="/history"
+                      element={
+                        <ProtectedRoute>
+                          <History />
+                        </ProtectedRoute>
+                      }
+                    />
+
                     <Route
                       path="/vehicles"
                       element={
-                        <AdminRoute>
+                        <ProtectedRoute>
                           <Vehicles />
-                        </AdminRoute>
+                        </ProtectedRoute>
                       }
                     />
 
@@ -247,8 +270,17 @@ function App() {
                     <Route
                       path="/reports"
                       element={
-                        <AdminRoute>
+                        <ProtectedRoute>
                           <Reports />
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/reports/create"
+                      element={
+                        <AdminRoute>
+                          <CreateReport />
                         </AdminRoute>
                       }
                     />

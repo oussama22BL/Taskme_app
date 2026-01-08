@@ -17,7 +17,8 @@ const ChatWidget: React.FC = () => {
     setIsTyping
   } = useChat();
   
-  const [isOpen, setIsOpen] = useState(false);
+  const { widgetOpen, closeWidget, toggleWidget } = useChat();
+  const [isOpen, setIsOpen] = useState(widgetOpen);
   const [messageInput, setMessageInput] = useState('');
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -25,6 +26,11 @@ const ChatWidget: React.FC = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    // sync with context widget state
+    setIsOpen(widgetOpen);
+  }, [widgetOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -60,7 +66,7 @@ const ChatWidget: React.FC = () => {
     <div className="chat-widget-container">
       <button
         className="chat-toggle-button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => toggleWidget()}
         aria-label="Ouvrir le chat"
       >
         <span className="chat-icon">💬</span>
@@ -75,7 +81,7 @@ const ChatWidget: React.FC = () => {
         <div className="chat-window">
           <div className="chat-header">
             <h3>Chat interne</h3>
-            <button className="chat-close" onClick={() => setIsOpen(false)}>
+            <button className="chat-close" onClick={() => closeWidget()}>
               ×
             </button>
           </div>

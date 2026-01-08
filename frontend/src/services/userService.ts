@@ -29,6 +29,12 @@ export const userService = {
     return resp.data;
   },
 
+  // Contacts endpoint for chat (authenticated users)
+  listContacts: async () => {
+    const resp = await api.get('/users/contacts');
+    return resp.data;
+  },
+
   getUser: async (id: string) => {
     const resp = await api.get(`/users/${id}`);
     return resp.data;
