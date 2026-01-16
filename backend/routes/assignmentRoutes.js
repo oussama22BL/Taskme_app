@@ -10,9 +10,9 @@ const {
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 // Routes Admin
-router.post('/', protect, authorize('admin', 'superAdmin'), createAssignment);
-router.get('/', protect, authorize('admin'), getAssignments);
-router.get('/history', protect, authorize('admin'), getAssignmentHistory);
+router.post('/', protect, authorize('admin'), createAssignment);
+router.get('/', protect, authorize('admin', 'superAdmin'), getAssignments);
+router.get('/history', protect, authorize('admin', 'superAdmin'), getAssignmentHistory);
 
 // Routes Auditeur (User)
 router.get('/my', protect, getMyAssignments);
