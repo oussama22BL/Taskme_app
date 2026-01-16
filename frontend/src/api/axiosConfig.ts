@@ -27,12 +27,14 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginPage = window.location.pathname === '/login';
+    if ((error.response?.status === 401 || error.response?.status === 403)  && !isLoginPage) {
       localStorage.removeItem('taskme_token');
       localStorage.removeItem('taskme_user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
+  
   }
 );
 

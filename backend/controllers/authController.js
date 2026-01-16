@@ -54,6 +54,8 @@ exports.login = async (req, res) => {
         // 1. Trouver l'utilisateur par email
         const user = await User.findOne({ email });
 
+        if (!user.isActive) return res.status(401).json({ message: "Compte désactivé. Contactez l'administration." });
+
         // 2. Vérifier si l'utilisateur existe et si le mot de passe correspond
         if (user && (await user.comparePassword(password))) {
             res.json({

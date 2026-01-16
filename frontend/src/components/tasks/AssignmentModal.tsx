@@ -78,8 +78,8 @@ const AssignmentModal: React.FC<AssignmentModalProps> = ({
   const availableVehicles = vehicles.filter(v => v.disponibilite);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 ">
+      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl no-scrollbar">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
           <div>
             <h2 className="text-2xl font-black text-slate-800">Affectation de mission</h2>

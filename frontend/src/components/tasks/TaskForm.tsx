@@ -61,6 +61,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
         data.append('pdf', formData.fichierJoint);
       }
 
+      if (new Date(formData.dateDebut) > new Date(formData.dateFin)) {
+        setError("La date de début doit être antérieure à la date de fin");
+        return;
+      }
+
       if (task) {
         await axiosInstance.put(`/tasks/${task._id}`, data);
       } else {
@@ -77,7 +82,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
         <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
           <h2 className="text-xl font-bold text-slate-800">{task ? 'Modifier la mission' : 'Nouvelle mission'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full"><X size={20}/></button>

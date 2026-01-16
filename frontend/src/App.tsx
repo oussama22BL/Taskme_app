@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
@@ -8,7 +8,7 @@ import { useToast } from './hooks/useToast';
 
 // Pages d'authentification
 import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
+
 
 // Pages Super Admin
 import AccountManager from './pages/superAdmin/AccountManager';
@@ -31,6 +31,8 @@ import UserHistory from './pages/user/History';
 // Layouts
 import AdminLayout from './components/layouts/AdminLayout';
 import UserLayout from './components/layouts/UserLayout';
+import AdminAssignments from './pages/admin/AdminAssignments';
+import Profile from './pages/user/Profile';
 
 const AppContent: React.FC = () => {
   const { toasts, removeToast } = useToast();
@@ -38,17 +40,19 @@ const AppContent: React.FC = () => {
   return (
     <>
       <Routes>
-        {/* Routes publiques */}
+       
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        
 
-        {/* --- ESPACE SUPER ADMIN (Isolé) --- */}
+     
         <Route path="/super-admin" element={<ProtectedRoute role="superAdmin"><AdminLayout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="accounts" />} />
+          <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<SuperAdminDashboard />} />
           <Route path="accounts" element={<AccountManager />} />
+          <Route path="assignments" element={<AdminAssignments />} />
           <Route path="tasks" element={<SuperAdminTasks />} />
-          <Route path="history" element={<AdminHistory />} /> {/* Lecture seule partagée */}
+          <Route path="history" element={<AdminHistory />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
 
@@ -64,8 +68,10 @@ const AppContent: React.FC = () => {
           <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="tasks" element={<AdminTasks />} />
+          <Route path="assignments" element={<AdminAssignments />} />
           <Route path="vehicles" element={<AdminVehicles />} />
           <Route path="history" element={<AdminHistory />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         {/* Routes Utilisateur */}
@@ -82,6 +88,7 @@ const AppContent: React.FC = () => {
           <Route path="missions" element={<UserMissions />} />
           <Route path="history" element={<UserHistory />} />
           <Route path="notifications" element={<UserNotifications />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         {/* Route par défaut */}

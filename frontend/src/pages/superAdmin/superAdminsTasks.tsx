@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import TaskForm from '../../components/tasks/TaskForm';
 import TaskList from '../../components/tasks/TaskList';
 import AssignmentModal from '../../components/tasks/AssignmentModal';
@@ -81,12 +81,6 @@ const AdminTasks: React.FC = () => {
             className="p-3 text-slate-600 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition"
           >
             <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
-          </button>
-          <button 
-            onClick={() => { setSelectedTask(null); setIsTaskFormOpen(true); }}
-            className="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:scale-105 transition-all flex items-center gap-2"
-          >
-            <Plus size={20}/> Créer une mission
           </button>
         </div>
       </div>

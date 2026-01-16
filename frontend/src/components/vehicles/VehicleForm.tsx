@@ -22,11 +22,11 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle, onClose, onSuccess }
 
   const vehicleTypes = ['Voiture', 'SUV', 'Utilitaire', 'Camionnette'];
   const directions = [
-    'Direction des Finances',
-    'Direction des Systèmes d\'Information',
-    'Direction des Ressources Humaines',
-    'Direction des Opérations',
-    'Direction Juridique',
+    'Finances',
+    'Systèmes d\'Information',
+    'Ressources Humaines',
+    'Opérations',
+    'Juridique',
     'Non affectée'
   ];
 

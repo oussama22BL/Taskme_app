@@ -179,3 +179,58 @@ exports.getAssignmentHistory = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+//     Modifier une affectation (Changer d'auditeur ou de véhicule)
+//    PUT /api/assignments/:id
+exports.updateAssignment = async (req, res) => {
+    try {
+        const { userId, vehicleId } = req.body;
+        const assignment = await Assignment.findById(req.params.id);
+        
+        if (!assignment) return res.status(404).json({ message: "Affectation non trouvée" });
+
+        // 1. Si on change de véhicule, on libère l'ancien
+        if (assignment.vehicleId && assignment.vehicleId.toString() !== vehicleId) {
+            await Vehicle.findByIdAndUpdate(assignment.vehicleId, { disponibilite: true });
+        }
+
+        // 2. Vérification du nouveau véhicule (Disponibilité par période - Logique du prof)
+        if (vehicleId) {
+            const task = await Task.findById(assignment.taskId);
+            const conflict = await Assignment.findOne({
+                _id: { $ne: assignment._id },
+                vehicleId: vehicleId,
+                statut: 'acceptée'
+            }).populate('taskId');
+
+            if (conflict) {
+                const hasOverlap = (new Date(task.dateDebut) <= new Date(conflict.taskId.dateFin) && 
+                                    new Date(task.dateFin) >= new Date(conflict.taskId.dateDebut));
+                if (hasOverlap) return res.status(400).json({ message: "Véhicule déjà réservé pour ces dates." });
+            }
+            await Vehicle.findByIdAndUpdate(vehicleId, { disponibilite: false });
+        }
+
+        assignment.userId = userId || assignment.userId;
+        assignment.vehicleId = vehicleId || assignment.vehicleId;
+        await assignment.save();
+
+        res.json({ message: "Affectation mise à jour", assignment });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+//     Supprimer une affectation (Annuler la mission pour cet auditeur)
+exports.deleteAssignment = async (req, res) => {
+    try {
+        const assignment = await Assignment.findById(req.params.id);
+        if (assignment.vehicleId) {
+            await Vehicle.findByIdAndUpdate(assignment.vehicleId, { disponibilite: true });
+        }
+        await Assignment.findByIdAndDelete(req.params.id);
+        res.json({ message: "Affectation annulée et véhicule libéré." });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

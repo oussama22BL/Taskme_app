@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { LogIn, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../api/axiosConfig';
@@ -30,15 +30,20 @@ const Login: React.FC = () => {
       login(token, user);
       
       // Redirection selon le rôle (Assure-toi que ces routes existent dans App.tsx)
-      if (user.role === 'admin' || user.role === 'superAdmin') {
+      if (user.role === 'superadmin') {
+        navigate('/super-admin/dashboard');
+      } else if (user.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
         navigate('/user/missions');
       }
       
     } catch (err: any) {
-      console.error(err);
-      setError(err.response?.data?.message || "Identifiants invalides ou erreur serveur");
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Erreur lors de la connexion. Veuillez réessayer.');
+      }
     } finally {
       setLoading(false); // Très important pour débloquer le bouton
     }
@@ -48,10 +53,9 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
-            <LogIn className="w-8 h-8 text-indigo-600" />
+          <div className="inline-flex items-center justify-center w-20 h-20">
+            <img src="/Taskme_logo.png" alt="taskme"/>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900">Taskme</h1>
           <p className="text-slate-600 mt-2">Gestion d'affectations d'auditeurs</p>
         </div>
 
@@ -99,15 +103,6 @@ const Login: React.FC = () => {
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-slate-600">
-            Pas de compte ?{' '}
-            <Link to="/register" className="text-indigo-600 hover:text-indigo-800 font-medium">
-              S'inscrire
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );

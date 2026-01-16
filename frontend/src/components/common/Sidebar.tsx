@@ -30,6 +30,7 @@ const Sidebar: React.FC = () => {
     { path: '/super-admin/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
     { path: '/super-admin/accounts', icon: UserIcon, label: 'Gestion Comptes' },
     { path: '/super-admin/tasks', icon: FileText, label: 'Gestion Tâches' },
+    { path: '/admin/assignments', icon: ShieldCheck, label: 'Affectations' },
     { path: '/admin/vehicles', icon: Car, label: 'Parc Automobile' },
     { path: '/admin/history', icon: History, label: 'Historique Global' },
   ];
@@ -37,6 +38,7 @@ const Sidebar: React.FC = () => {
   const adminNavItems = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
     { path: '/admin/tasks', icon: FileText, label: 'Gestion Tâches' },
+    { path: '/admin/assignments', icon: ShieldCheck, label: 'Affectations' },
     { path: '/admin/vehicles', icon: Car, label: 'Parc Automobile' },
     { path: '/admin/history', icon: History, label: 'Historique Global' },
   ];
@@ -61,14 +63,12 @@ const Sidebar: React.FC = () => {
       
       {/* HEADER : Logo */}
       <div className="p-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <ShieldCheck className="w-6 h-6 text-white" />
-          </div>
-          <div>
+        <div className="flex justify-center items-center gap-3">
+          <img src="/Taskme_logo.png" alt="Logo" className="w-20 h-20"  />
+          {/*<div>
             <h1 className="text-xl font-bold tracking-tight text-white">Taskme</h1>
             <p className="text-[10px] uppercase tracking-widest text-indigo-400 font-semibold">Audit System</p>
-          </div>
+          </div>*/}
         </div>
       </div>
 
@@ -82,7 +82,7 @@ const Sidebar: React.FC = () => {
             <div className="overflow-hidden">
               <p className="font-bold text-sm truncate text-white">{user?.nom} {user?.prenom}</p>
               <span className="text-[10px] px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded uppercase font-bold">
-                {user?.role}
+                {user?.role === 'superAdmin' ? 'Administrateur' : user?.role === 'admin' ? 'Coordinnateur' : 'Auditeur'}
               </span>
             </div>
           </div>
@@ -94,7 +94,7 @@ const Sidebar: React.FC = () => {
       </div>
 
       {/* NAVIGATION */}
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto scrollbar-hide no-scrollbar">
         <p className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Menu</p>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;

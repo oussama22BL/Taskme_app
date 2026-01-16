@@ -6,6 +6,8 @@ export interface User {
   role: 'admin' | 'user' | 'superAdmin';
   specialite: string;
   grade: string;
+  diplomes?: string[];
+  formations?: string[];
   createdAt?: Date;
 }
 

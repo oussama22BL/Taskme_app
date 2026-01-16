@@ -5,7 +5,9 @@ const {
     getMyAssignments, 
     respondToAssignment, 
     getAssignments, 
-    getAssignmentHistory
+    getAssignmentHistory,
+    updateAssignment,
+    deleteAssignment
 } = require('../controllers/assignmentController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -13,6 +15,8 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 router.post('/', protect, authorize('admin'), createAssignment);
 router.get('/', protect, authorize('admin', 'superAdmin'), getAssignments);
 router.get('/history', protect, authorize('admin', 'superAdmin'), getAssignmentHistory);
+router.put('/:id', protect, authorize('admin','superAdmin'), updateAssignment);
+router.delete('/:id', protect, authorize('admin','superAdmin'), deleteAssignment);
 
 // Routes Auditeur (User)
 router.get('/my', protect, getMyAssignments);

@@ -35,8 +35,8 @@ const AdminHistory: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Journal d'Audit</h1>
-        <p className="text-slate-500">Traçabilité complète des actions système (Point 8 du cahier des charges)</p>
+        <h1 className="text-3xl font-bold text-slate-900">Journal d'affectations</h1>
+        <p className="text-slate-500">Traçabilité complète des actions système</p>
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
