@@ -5,23 +5,46 @@ const mongoose = require('mongoose');
 const History = require('../models/History');
 
 
-// @desc    Créer une nouvelle tâche
-// @route   POST /api/tasks
+//    Créer une nouvelle tâche
+//   POST /api/tasks
 exports.createTask = async (req, res) => {
     try {
-        const taskData = req.body;
-        
-        // Ajouter l'ID de l'admin qui crée la tâche
-        taskData.createdBy = req.user._id;
+        console.log('req.file:', req.file); // Debug: vérifier si le fichier est reçu
+        // 1. On extrait les données textuelles du body
+        const { 
+            titre, description, type, dateDebut, dateFin, isRemuneree,
+            direction, besoinVehicule, specialitesConcernees, gradesConcernes 
+        } = req.body;
 
-        // Si un fichier a été uploadé, on enregistre son chemin
-        if (req.file) {
-            taskData.fichierJoint = req.file.path;
-        }
+        // 2. On prépare l'objet de données
+        const taskData = {
+            titre,
+            description,
+            type,
+            dateDebut,
+            dateFin,
+            direction,
+            isRemuneree: isRemuneree  === 'true',
+            // Conversion : FormData envoie des strings, on transforme en Boolean
+            besoinVehicule: besoinVehicule === 'true', 
+            createdBy: req.user._id,
+            // 🚨 L'ÉTAPE CRUCIALE : Récupérer le chemin du fichier Multer
+            fichierJoint: req.file ? req.file.path : null 
+        };
 
+        // 3. Gestion des tableaux (Spécialités/Grades)
+        // Multer regroupe les entrées multiples avec le même nom dans un tableau
+        taskData.specialitesConcernees = req.body.specialitesConcernees;
+        taskData.gradesConcernes = req.body.gradesConcernes;
+         console.log("FormData envoyé !");
+        // 4. Enregistrement en base de données
         const task = await Task.create(taskData);
+        console.log('Task created with fichierJoint:', task.fichierJoint); // Debug: vérifier le chemin stocké
+        
+
         res.status(201).json(task);
     } catch (error) {
+        console.error("Erreur Backend CreateTask:", error);
         res.status(400).json({ message: "Erreur lors de la création", error: error.message });
     }
 };
@@ -132,7 +155,7 @@ exports.updateTask = async (req, res) => {
 
         // 2. Préparer les données (on extrait du req.body car c'est du FormData)
         const { 
-            titre, description, type, dateDebut, dateFin, 
+            titre, description, type, dateDebut, dateFin, isRemuneree,
             direction, besoinVehicule, specialitesConcernees, gradesConcernes 
         } = req.body;
 
@@ -142,7 +165,7 @@ exports.updateTask = async (req, res) => {
         }
 
         // 4. GESTION DU PDF (Si un nouveau fichier est téléchargé)
-        let fichierPath = task.fichierJoint;
+        let fichierPath = req.file ? req.file.path : task.fichierJoint;
         if (req.file) {
             fichierPath = req.file.path; // On remplace par le nouveau chemin
         }
@@ -164,6 +187,7 @@ exports.updateTask = async (req, res) => {
             dateDebut: dateDebut || task.dateDebut,
             dateFin: dateFin || task.dateFin,
             direction: direction || task.direction,
+            isRemuneree: isRemuneree === 'true' || isRemuneree === true,
             besoinVehicule: besoinVehicule === 'true' || besoinVehicule === true,
             fichierJoint: fichierPath,
             specialitesConcernees: specialitesConcernees ? parseArray(specialitesConcernees) : task.specialitesConcernees,

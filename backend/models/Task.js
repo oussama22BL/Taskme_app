@@ -19,7 +19,7 @@ const taskSchema = new mongoose.Schema({
         type: String, 
         enum: ['Rabat-Casa', 'Meknès-Errachidia', 'Marrakech-Agadir'] 
     },
-    fichierJoint: { type: String }, // URL du PDF (Multer)
+    fichierJoint: { type: String , default: null}, // URL du PDF (Multer)
     nombrePlaces: { type: Number, default: 1 },
     statut: { 
         type: String, 

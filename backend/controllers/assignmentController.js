@@ -1,7 +1,7 @@
 const Assignment = require('../models/Assignment');
 const Task = require('../models/Task');
 const User = require('../models/User');
-const Notification = require('../models/Notification'); // <--- NE PAS OUBLIER CET IMPORT
+const Notification = require('../models/Notification'); 
 const History = require('../models/History');
 const Vehicle = require('../models/Vehicle');
 const { findUserByTourDeRole, findUserByIA } = require('../utils/assignmentAlgos');
@@ -97,7 +97,7 @@ exports.createAssignment = async (req, res) => {
 };
 
 
-// 1. Liste globale avec filtre (pour le Dashboard Admin)
+// Liste globale avec filtre (pour le Dashboard Admin)
 exports.getAssignments = async (req, res) => {
     try {
         const { statut } = req.query;

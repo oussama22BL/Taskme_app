@@ -25,6 +25,7 @@ export interface Task {
   specialitesConcernees: string[];
   gradesConcernes: string[];
   statut: 'ouverte' | 'fermée';
+  isRemuneree: boolean;
 }
 
 export interface Vehicle {
@@ -47,6 +48,7 @@ export interface Assignment {
   rapportAlgorithme?: string;
   justificatifRefus?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Notification {

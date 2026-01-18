@@ -5,7 +5,7 @@ const User = require('../models/User');
 exports.protect = async (req, res, next) => {
     let token;
 
-    // Le token est envoyé dans le header : Authorization: Bearer <token>
+    
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             // Extraire le token
@@ -17,7 +17,7 @@ exports.protect = async (req, res, next) => {
             // Ajouter l'utilisateur à la requête (sans le mot de passe)
             req.user = await User.findById(decoded.id).select('-password');
 
-            next(); // Passer à l'étape suivante
+            next(); 
         } catch (error) {
             res.status(401).json({ message: "Non autorisé, token invalide" });
         }
@@ -28,7 +28,7 @@ exports.protect = async (req, res, next) => {
     }
 };
 
-// 2. Vérifier les rôles (ex: restreindre aux admins)
+// Vérifier les rôles 
 exports.authorize = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {

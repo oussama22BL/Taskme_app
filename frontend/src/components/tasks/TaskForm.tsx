@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, FileText } from 'lucide-react';
+import { X, Upload} from 'lucide-react';
 import type { Task } from '../../types';
 import axiosInstance from '../../api/axiosConfig';
 
@@ -21,6 +21,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
     specialitesConcernees: task?.specialitesConcernees || [] as string[],
     gradesConcernes: task?.gradesConcernes || [] as string[],
     fichierJoint: null as File | null,
+    isRemuneree: task?.isRemuneree || false,
   });
 
   const [loading, setLoading] = useState(false);
@@ -38,39 +39,49 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.specialitesConcernees.length === 0) return setError("Sélectionnez au moins une spécialité");
     
+    if (formData.specialitesConcernees.length === 0) {
+      return setError("Sélectionnez au moins une spécialité");
+    }
+
+    if (new Date(formData.dateDebut) > new Date(formData.dateFin)) {
+      setError("La date de début doit être antérieure à la date de fin");
+      return;
+    }
+
     setLoading(true);
     try {
       const data = new FormData();
       
-      // On ajoute les champs simples
+      // Ajout des champs simples
       data.append('titre', formData.titre);
       data.append('type', formData.type);
       data.append('dateDebut', formData.dateDebut);
       data.append('dateFin', formData.dateFin);
       data.append('direction', formData.direction);
       data.append('besoinVehicule', String(formData.besoinVehicule));
+      data.append('isRemuneree', String(formData.isRemuneree));
 
-      // IMPORTANT : Pour que Multer/Mongoose reçoivent un tableau,
-      // on peut envoyer chaque item séparément avec le même nom de clé
-      formData.specialitesConcernees.forEach(s => data.append('specialitesConcernees[]', s));
-      formData.gradesConcernes.forEach(g => data.append('gradesConcernes[]', g));
+      // Ajout des tableaux : On utilise le MÊME nom de clé plusieurs fois
+      // C'est la méthode standard pour envoyer des tableaux en FormData
+      formData.specialitesConcernees.forEach(s => data.append('specialitesConcernees', s));
+      formData.gradesConcernes.forEach(g => data.append('gradesConcernes', g));
 
+      // 🚨 AJOUT DU FICHIER : La clé doit être "pdf" (comme dans ta route backend)
+      console.log('formData.fichierJoint:', formData.fichierJoint); // Debug: vérifier si le fichier est sélectionné
+      console.log('formData.isRemuneree:', formData.isRemuneree); 
       if (formData.fichierJoint) {
         data.append('pdf', formData.fichierJoint);
+        console.log('File appended to FormData'); // Debug: confirmer l'ajout
       }
 
-      if (new Date(formData.dateDebut) > new Date(formData.dateFin)) {
-        setError("La date de début doit être antérieure à la date de fin");
-        return;
-      }
-
+      // Envoi au serveur
       if (task) {
         await axiosInstance.put(`/tasks/${task._id}`, data);
       } else {
         await axiosInstance.post('/tasks', data);
       }
+
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -164,6 +175,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
           <div className="flex items-center p-4 bg-slate-50 rounded-2xl">
             <input type="checkbox" id="vehicule" checked={formData.besoinVehicule} onChange={e => setFormData({...formData, besoinVehicule: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded-lg" />
             <label htmlFor="vehicule" className="ml-3 text-sm font-semibold text-slate-700 cursor-pointer">Nécessite un véhicule de service</label>
+          </div>
+
+          <div className="flex items-center p-4 bg-slate-50 rounded-2xl">
+            <input type="checkbox" id="remuneree" checked={formData.isRemuneree} onChange={e => setFormData({...formData, isRemuneree: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded-lg" />
+            <label htmlFor="remuneree" className="ml-3 text-sm font-semibold text-slate-700 cursor-pointer">Mission rémunérée</label>
           </div>
 
           <div className="flex justify-end gap-3 pt-6">

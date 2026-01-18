@@ -1,17 +1,17 @@
 require('dotenv').config();
 const express = require('express');
-const http = require('http'); // <--- AJOUTER
-const { Server } = require('socket.io'); // <--- AJOUTER
+const http = require('http'); 
+const { Server } = require('socket.io'); 
 const connectDB = require('./config/db');
 const startCronJobs = require('./utils/cronJobs');
 const cors = require('cors');
 const Message = require('./models/Message');
-
+const path = require('path');
 
 const app = express();
-const server = http.createServer(app); // <--- CRÉER LE SERVEUR HTTP
+const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*" } // Autorise le frontend à se connecter
+  cors: { origin: "*" } 
 });
 
 startCronJobs(io);
@@ -25,7 +25,7 @@ io.on('connection', (socket) => {
         console.log(`User ${userId} est prêt à recevoir des notifications`);
     });
 
-    // --- NOUVELLE LOGIQUE CHAT (Point 10 du projet) ---
+  
 
     // 1. Rejoindre un salon (soit 'general', soit l'ID d'une tâche spécifique)
     socket.on('join_chat', (roomId) => {
@@ -70,7 +70,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors());
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -81,12 +81,14 @@ app.use('/api/vehicles', require('./routes/vehicleRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 
+
+
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
     await connectDB();
-    // UTILISER server.listen au lieu de app.listen
+    
     server.listen(PORT, () => {
       console.log(`🚀 Serveur et Socket.io démarrés sur le port ${PORT}`);
     });

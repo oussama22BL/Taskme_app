@@ -4,12 +4,12 @@ const jwt = require('jsonwebtoken');
 // Fonction utilitaire pour générer le Token JWT
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: '24h', // Le token expire après 24 heures
+        expiresIn: '24h'
     });
 };
 
-// @desc    Enregistrer un nouvel utilisateur
-// @route   POST /api/auth/register
+
+// POST /api/auth/register
 exports.register = async (req, res) => {
     try {
         const { nom, prenom, email, password, role, specialite, grade } = req.body;
@@ -37,7 +37,7 @@ exports.register = async (req, res) => {
                 nom: user.nom,
                 email: user.email,
                 role: user.role,
-                token: generateToken(user._id), // On envoie le token dès l'inscription
+                token: generateToken(user._id), 
             });
         }
     } catch (error) {
@@ -45,8 +45,8 @@ exports.register = async (req, res) => {
     }
 };
 
-// @desc    Authentifier l'utilisateur & obtenir le token
-// @route   POST /api/auth/login
+
+//   POST /api/auth/login
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
