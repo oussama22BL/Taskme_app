@@ -12,7 +12,6 @@ interface TaskFormProps {
 const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     titre: task?.titre || '',
-    // Ajouté
     type: task?.type || 'Formateur',
     dateDebut: task?.dateDebut ? new Date(task.dateDebut).toISOString().split('T')[0] : '',
     dateFin: task?.dateFin ? new Date(task.dateFin).toISOString().split('T')[0] : '',
@@ -22,6 +21,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
     gradesConcernes: task?.gradesConcernes || [] as string[],
     fichierJoint: null as File | null,
     isRemuneree: task?.isRemuneree || false,
+    nombrePlaces: task?.nombrePlaces || 1,
   });
 
   const [loading, setLoading] = useState(false);
@@ -45,7 +45,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
     }
 
     if (new Date(formData.dateDebut) > new Date(formData.dateFin)) {
-      setError("La date de début doit être antérieure à la date de fin");
+      setError("La date de début doit être anférieure à la date de fin");
+      return;
+    }
+
+    if(new Date(formData.dateDebut) < new Date(Date.now() + 48 * 60 * 60 * 1000)) {
+      setError("La date de début doit être au moins 48h dans le futur");
       return;
     }
 
@@ -61,6 +66,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
       data.append('direction', formData.direction);
       data.append('besoinVehicule', String(formData.besoinVehicule));
       data.append('isRemuneree', String(formData.isRemuneree));
+      data.append('nombrePlaces', String(formData.nombrePlaces));
+      console.log('Sending nombrePlaces:', formData.nombrePlaces);
+      console.log('Sending nombrePlaces:',typeof formData.nombrePlaces);
 
       // Ajout des tableaux : On utilise le MÊME nom de clé plusieurs fois
       // C'est la méthode standard pour envoyer des tableaux en FormData
@@ -143,6 +151,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSuccess }) => {
                     className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.gradesConcernes.includes(g) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{g}</button>
                 ))}
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre de places</label>
+              <input type="number" value={formData.nombrePlaces} onChange={e => setFormData({...formData, nombrePlaces: parseInt(e.target.value, 10)})} className="w-full px-4 py-3 rounded-xl border border-slate-200" required />
             </div>
           </div>
 

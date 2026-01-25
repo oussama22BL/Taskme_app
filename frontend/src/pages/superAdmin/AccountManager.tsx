@@ -5,7 +5,7 @@ import axiosInstance from '../../api/axiosConfig';
 
 const AccountManager = () => {
   const [users, setUsers] = useState([]);
-  const [formData, setFormData] = useState({ nom: '', prenom: '', email: '', role: 'user', specialite: '', grade: '' });
+  const [formData, setFormData] = useState({ nom: '', prenom: '', email: '', password: '', role: 'user', specialite: '', grade: '' });
   const [loading, setLoading] = useState(false);
 
   const fetchUsers = async () => {
@@ -53,7 +53,8 @@ const AccountManager = () => {
             <input placeholder="Prénom" onChange={e=>setFormData({...formData, prenom:e.target.value})} className="w-full p-3 bg-slate-50 rounded-xl border-none text-sm" required />
             <input placeholder="Nom" onChange={e=>setFormData({...formData, nom:e.target.value})} className="w-full p-3 bg-slate-50 rounded-xl border-none text-sm" required />
             <input type="email" placeholder="Email" onChange={e=>setFormData({...formData, email:e.target.value})} className="w-full p-3 bg-slate-50 rounded-xl border-none text-sm" required />
-
+            <input type="password" placeholder="Mot de passe temporaire" onChange={e=>setFormData({...formData, password:e.target.value})} className="w-full p-3 bg-slate-50 rounded-xl border-none text-sm" required />
+            
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Spécialité</label>
               <select onChange={e=>setFormData({...formData, specialite:e.target.value})} className="w-full p-3 bg-slate-50 rounded-xl border-none text-sm">

@@ -58,17 +58,24 @@ const AssignmentModal: React.FC<AssignmentModalProps> = ({
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      console.log('Tentative de création d\'affectation:', {
+        taskId: task._id,
+        userId: selectedAuditor,
+        vehicleId: task.besoinVehicule ? selectedVehicle : undefined,
+        mode: selectedMode,
+      });
       // L'APPEL API SE FAIT ICI
-      await axiosInstance.post('/assignments', {
+      const response = await axiosInstance.post('/assignments', {
         taskId: task._id,
         userId: selectedAuditor, // Sera vide en semi-auto car le backend choisit
         vehicleId: task.besoinVehicule ? selectedVehicle : undefined,
         mode: selectedMode,
       });
-
+      console.log('Affectation créée avec succès:', response.data);
       onSuccess(); // Appelle fetchData() chez le parent
       onClose();   // Ferme le modal
     } catch (error: any) {
+      console.error('Erreur lors de l\'affectation:', error.response?.data);
       alert(error.response?.data?.message || "Erreur lors de l'affectation");
     } finally {
       setLoading(false);

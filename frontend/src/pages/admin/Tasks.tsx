@@ -69,7 +69,7 @@ const AdminTasks: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 no-scrollbar ">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-black text-slate-900">Missions d'Audit</h1>

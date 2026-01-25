@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Users, Calendar, FileText, Car, ExternalLink, AlertCircle } from 'lucide-react';
+import { Edit2, Trash2, Users, Calendar, FileText, Car, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import type { Task } from '../../types';
 
 interface TaskListProps {
@@ -100,14 +100,39 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onEdit, onDelete, onAssign, 
                   )}
                 </td>
 
-                {/* Colonne Statut */}
+              {/* Colonne Statut */}
                 <td className="px-6 py-5">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                    task.statut === 'ouverte' ? 'bg-emerald-100 text-emerald-600' : 
-                    task.statut === 'fermée' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'
-                  }`}>
-                    {task.statut}
-                  </span>
+                  {(() => {
+                    switch (task.statut) {
+                      case 'ouverte':
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-tighter border border-emerald-200">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                            En attente
+                          </span>
+                        );
+                      case 'en_cours':
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-tighter border border-blue-200">
+                            <Clock size={12} className="text-blue-500" />
+                            En cours
+                          </span>
+                        );
+                      case 'clôturée':
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-tighter border border-slate-200">
+                            <CheckCircle size={12} className="text-slate-400" />
+                            Complète
+                          </span>
+                        );
+                      default:
+                        return (
+                          <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-tighter">
+                            {task.statut}
+                          </span>
+                        );
+                    }
+                  })()}
                 </td>
 
                 {/* Colonne Actions */}

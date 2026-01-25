@@ -24,8 +24,9 @@ export interface Task {
   createdAt?: Date;
   specialitesConcernees: string[];
   gradesConcernes: string[];
-  statut: 'ouverte' | 'fermée';
+  statut: 'ouverte' | 'en_cours' | 'clôturée';
   isRemuneree: boolean;
+  nombrePlaces: number;
 }
 
 export interface Vehicle {

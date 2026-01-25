@@ -10,7 +10,7 @@ const AdminLayout: React.FC = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Navbar />
-        <main className="flex-1 p-6 overflow-auto no-scrollbar v-scroll">
+        <main className="flex-1 p-6 overflow-auto no-scrollbar">
           <Outlet />
         </main>
         <ChatHub />
