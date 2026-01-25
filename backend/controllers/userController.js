@@ -18,7 +18,7 @@ exports.getUsers = async (req, res) => {
 // @desc    Créer un compte et envoyer code par email
 exports.createAccount = async (req, res) => {
     try {
-        const { nom, prenom, email, role, specialite, grade } = req.body;
+        const { nom, prenom, email,password, role, specialite, grade } = req.body;
 
         // 1. Vérifier si l'utilisateur existe
         const userExists = await User.findOne({ email });
@@ -30,7 +30,7 @@ exports.createAccount = async (req, res) => {
         // 3. Créer l'utilisateur
         const user = await User.create({
             nom, prenom, email,
-            password: tempPassword,
+            password,
             role, 
             specialite,
             grade,

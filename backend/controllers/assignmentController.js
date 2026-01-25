@@ -62,6 +62,10 @@ exports.createAssignment = async (req, res) => {
         // 5. Mettre à jour la date de dernière affection de l'auditeur
         await User.findByIdAndUpdate(finalUserId, { dernierAffection: Date.now() });
 
+         console.log(`Mise à jour du statut de la tâche ${taskId} à 'en_cours'`);
+         await Task.findByIdAndUpdate(taskId, { statut: 'en_cours' });
+         console.log(`Statut de la tâche mis à jour avec succès`);
+
         // 6. Enregistrement dans l'Historique global (Traçabilité)
         await History.create({
             action: 'AFFECTATION_CREEE',
@@ -128,40 +132,111 @@ exports.getMyAssignments = async (req, res) => {
 };
 
 
-// @route   PUT /api/assignments/:id/respond
+
+
 exports.respondToAssignment = async (req, res) => {
     try {
-        const { statut, justificatifRefus } = req.body; // 'acceptée' ou 'refusée'
-        const assignment = await Assignment.findById(req.params.id);
+        const { statut, justificatifRefus } = req.body;
+        
+        // 1. On récupère l'affectation en "peuplante" la tâche et le véhicule
+        const assignment = await Assignment.findById(req.params.id)
+            .populate('taskId')
+            .populate('vehicleId');
 
         if (!assignment) return res.status(404).json({ message: "Affectation non trouvée" });
 
-        // Vérifier que c'est bien l'utilisateur concerné qui répond
+        // Vérification de sécurité (seul l'auditeur concerné peut répondre)
         if (assignment.userId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: "Non autorisé" });
         }
 
-        assignment.statut = statut;
-        if (statut === 'refusée') assignment.justificatifRefus = justificatifRefus;
+        // 2. LOGIQUE SI REFUS (Remarque prof : libérer véhicule + retour délégation)
+        if (statut === 'refusée') {
+            assignment.statut = 'refusée';
+            assignment.justificatifRefus = justificatifRefus || "Refus manuel de l'auditeur";
+
+            // a. Libérer le véhicule immédiatement si un véhicule était réservé
+            if (assignment.vehicleId) {
+                await Vehicle.findByIdAndUpdate(assignment.vehicleId._id, { disponibilite: true });
+            }
+
+            
+
+            // b. Retour de délégation (Remarque prof : si refus, la tâche revient à l'initial)
+            if (assignment.isDelegated && assignment.originalAssignment) {
+                const original = await Assignment.findById(assignment.originalAssignment);
+                if (original) {
+                    original.statut = 'acceptée'; // Elle redevient active pour la personne de départ
+                    await original.save();
+                    
+                    // Notifier l'auditeur initial du retour
+                    await Notification.create({
+                        userId: assignment.delegatedFrom,
+                        message: `Votre délégation a été refusée. La mission vous a été réattribuée.`
+                    });
+                }
+            }
+
+            const otherActive = await Assignment.countDocuments({
+                taskId: assignment.taskId._id,
+                statut: { $in: ['en_attente', 'acceptée'] },
+                _id: { $ne: assignment._id }
+            });
+
+            if (otherActive === 0) {
+                // 🚨 Plus personne sur la mission : elle redevient "ouverte"
+                await Task.findByIdAndUpdate(assignment.taskId._id, { statut: 'ouverte' });
+            }
+        } 
+
+        // 3. LOGIQUE SI ACCEPTÉE (Remarque prof : gestion du quota d'auditeurs)
+        else if (statut === 'acceptée') {
+            assignment.statut = 'acceptée';
+            
+            const taskId = assignment.taskId._id;
+            const maxPlaces = assignment.taskId.nombrePlaces || 1;
+
+            // On compte combien de personnes ont déjà accepté cette mission
+            const countAccepted = await Assignment.countDocuments({ taskId, statut: 'acceptée' });
+
+            // Si on atteint le nombre maximum de places prévues
+            if (countAccepted + 1 >= maxPlaces) {
+                // On refuse automatiquement tous les autres auditeurs encore "en_attente"
+                await Assignment.updateMany(
+                    { taskId, statut: 'en_attente', _id: { $ne: assignment._id } },
+                    { statut: 'refusée', justificatifRefus: "Quota d'auditeurs atteint (Mission complète)." }
+                );
+                // On ferme la tâche officiellement
+                await Task.findByIdAndUpdate(taskId, { statut: 'clôturée' });
+            } else {
+                // Sinon on passe la tâche en cours
+                await Task.findByIdAndUpdate(taskId, { statut: 'en_cours' });
+            }
+        }
+
         assignment.dateReponse = Date.now();
         await assignment.save();
 
-        // --- ENREGISTRER DANS L'HISTORIQUE ---
+        // 4. HISTORIQUE ET TRAÇABILITÉ (Point 8 du cahier des charges)
         await History.create({
             action: statut === 'acceptée' ? 'MISSION_ACCEPTEE' : 'MISSION_REFUSEE',
             targetId: assignment._id,
             targetType: 'Assignment',
             performedBy: req.user._id,
-            details: justificatifRefus || "Mission acceptée"
+            details: statut === 'refusée' ? assignment.justificatifRefus : "Mission validée par l'auditeur."
         });
 
-        // --- NOTIFIER L'ADMIN VIA SOCKET ---
-        req.io.emit('admin_notification', {
-            message: `L'auditeur ${req.user.nom} a ${statut} la mission.`
-        });
+        // 5. SOCKETS (Notifications Admin)
+        if (req.io) {
+            req.io.emit('admin_notification', {
+                message: `L'auditeur ${req.user.prenom} ${req.user.nom} a ${statut} la mission : ${assignment.taskId.titre}.`
+            });
+        }
 
         res.json({ message: `Mission ${statut} avec succès`, assignment });
+
     } catch (error) {
+        console.error("Erreur respondToAssignment:", error);
         res.status(500).json({ message: error.message });
     }
 };

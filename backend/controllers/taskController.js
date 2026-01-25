@@ -13,8 +13,10 @@ exports.createTask = async (req, res) => {
         // 1. On extrait les données textuelles du body
         const { 
             titre, description, type, dateDebut, dateFin, isRemuneree,
-            direction, besoinVehicule, specialitesConcernees, gradesConcernes 
+            direction, besoinVehicule, nombrePlaces
         } = req.body;
+
+        console.log('Received nombrePlaces:', nombrePlaces, typeof nombrePlaces);
 
         // 2. On prépare l'objet de données
         const taskData = {
@@ -27,6 +29,7 @@ exports.createTask = async (req, res) => {
             isRemuneree: isRemuneree  === 'true',
             // Conversion : FormData envoie des strings, on transforme en Boolean
             besoinVehicule: besoinVehicule === 'true', 
+            nombrePlaces: parseInt(nombrePlaces) || 1,
             createdBy: req.user._id,
             // 🚨 L'ÉTAPE CRUCIALE : Récupérer le chemin du fichier Multer
             fichierJoint: req.file ? req.file.path : null 
@@ -156,7 +159,7 @@ exports.updateTask = async (req, res) => {
         // 2. Préparer les données (on extrait du req.body car c'est du FormData)
         const { 
             titre, description, type, dateDebut, dateFin, isRemuneree,
-            direction, besoinVehicule, specialitesConcernees, gradesConcernes 
+            direction, besoinVehicule, specialitesConcernees, gradesConcernes, nombrePlaces
         } = req.body;
 
         // 3. VALIDATION DES DATES (Remarque du prof)
@@ -189,6 +192,7 @@ exports.updateTask = async (req, res) => {
             direction: direction || task.direction,
             isRemuneree: isRemuneree === 'true' || isRemuneree === true,
             besoinVehicule: besoinVehicule === 'true' || besoinVehicule === true,
+            nombrePlaces: nombrePlaces ? parseInt(nombrePlaces) : task.nombrePlaces,
             fichierJoint: fichierPath,
             specialitesConcernees: specialitesConcernees ? parseArray(specialitesConcernees) : task.specialitesConcernees,
             gradesConcernes: gradesConcernes ? parseArray(gradesConcernes) : task.gradesConcernes
