@@ -22,11 +22,11 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle, onClose, onSuccess }
 
   const vehicleTypes = ['Voiture', 'SUV', 'Utilitaire', 'Camionnette'];
   const directions = [
-    'Finances',
-    'Systèmes d\'Information',
-    'Ressources Humaines',
-    'Opérations',
-    'Juridique',
+    'Errachidia-Rabat',
+    'Errachidia-Casablanca',
+    'Errachidia-Marrakech',
+    'Errachidia-Tanger',
+    'Errachidia-Agadir',
     'Non affectée'
   ];
 

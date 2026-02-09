@@ -43,10 +43,10 @@ const startCronJobs = (io) => {
                 // 5. Envoyer l'alerte en temps réel si l'user est connecté
                 io.emit('new_notification', notif);
                 
-                console.log(`✅ Mission ${assignment._id} acceptée automatiquement.`);
+                console.log(`Mission ${assignment._id} acceptée automatiquement.`);
             }
         } catch (error) {
-            console.error("❌ Erreur dans le Cron Job :", error);
+            console.error("Erreur dans le Cron Job :", error);
         }
     });
 };

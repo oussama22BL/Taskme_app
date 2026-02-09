@@ -17,9 +17,9 @@ const io = new Server(server, {
 startCronJobs(io);
 
 io.on('connection', (socket) => {
-    console.log('⚡ Un utilisateur est connecté au socket :', socket.id);
+    console.log('Un utilisateur est connecté au socket :', socket.id);
 
-    // --- LOGIQUE NOTIFICATIONS (Déjà faite normalement) ---
+    //LOGIQUE NOTIFICATIONS
     socket.on('setup', (userId) => {
         socket.join(userId); // L'utilisateur rejoint sa propre "room" pour ses notifications perso
         console.log(`User ${userId} est prêt à recevoir des notifications`);
@@ -27,13 +27,13 @@ io.on('connection', (socket) => {
 
   
 
-    // 1. Rejoindre un salon (soit 'general', soit l'ID d'une tâche spécifique)
+    //  Rejoindre un salon (soit 'general', soit l'ID d'une tâche spécifique)
     socket.on('join_chat', (roomId) => {
         socket.join(roomId);
-        console.log(`📥 L'utilisateur ${socket.id} a rejoint le salon : ${roomId}`);
+        console.log(`L'utilisateur ${socket.id} a rejoint le salon : ${roomId}`);
     });
 
-    // 2. Écouter l'envoi d'un message
+    // Écouter l'envoi d'un message
     socket.on('send_message', async (data) => {
         try {
             const { senderId, taskId, content } = data;
@@ -59,7 +59,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('❌ Utilisateur déconnecté');
+        console.log('Utilisateur déconnecté');
     });
 });
 
@@ -90,10 +90,10 @@ const startServer = async () => {
     await connectDB();
     
     server.listen(PORT, () => {
-      console.log(`🚀 Serveur et Socket.io démarrés sur le port ${PORT}`);
+      console.log(`Serveur et Socket.io démarrés sur le port ${PORT}`);
     });
   } catch (error) {
-    console.error("❌ Erreur lors du démarrage :", error);
+    console.error("Erreur lors du démarrage :", error);
   }
 }
 

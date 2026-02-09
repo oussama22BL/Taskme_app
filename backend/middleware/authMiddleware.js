@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// 1. Vérifier si l'utilisateur est authentifié (a un token valide)
+// Vérifier si l'utilisateur est authentifié (a un token valide)
 exports.protect = async (req, res, next) => {
     let token;
 

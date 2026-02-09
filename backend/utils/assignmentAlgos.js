@@ -1,71 +1,54 @@
 const User = require('../models/User');
 const Assignment = require('../models/Assignment');
-const Task = require('../models/Task');
 
 
-//================Affectation semi automatisé================//
 
+//Affectation semi automatisé
 exports.findUserByTourDeRole = async (newTask) => {
-    console.log("--- Début Algo Tour de Rôle ---");
-    console.log("Critères Tâche :", { 
-        specs: newTask.specialitesConcernees, 
-        grades: newTask.gradesConcernes 
-    });
-    // 1. Filtrer les candidats par spécialité et grade
+    
     let candidates = await User.find({
+        role: 'user', 
         specialite: { $in: newTask.specialitesConcernees },
         grade: { $in: newTask.gradesConcernes },
         isActive: true
     });
 
-    if (candidates.length === 0) return null;
+    let eligibleList = [];
 
-    let eligibleCandidates = [];
-
-    // 2. Vérifier la disponibilité temporelle pour chaque candidat
     for (let user of candidates) {
-        
-        // Trouver TOUTES les affectations actives de cet utilisateur
-        const activeAssignments = await Assignment.find({
+        const activeAss = await Assignment.find({
             userId: user._id,
             statut: { $in: ['en_attente', 'acceptée'] }
         }).populate('taskId');
 
         let isBusy = false;
-
-        for (let assignment of activeAssignments) {
-            const existingTask = assignment.taskId;
-
-            // Logique de collision de dates :
-            // Il y a conflit si (Debut1 <= Fin2) ET (Fin1 >= Debut2)
-            const hasOverlap = (newTask.dateDebut <= existingTask.dateFin && 
-                                newTask.dateFin >= existingTask.dateDebut);
-
+        for (let ass of activeAss) {
+            const existingTask = ass.taskId;
+            const hasOverlap = (new Date(newTask.dateDebut) <= new Date(existingTask.dateFin) && 
+                                new Date(newTask.dateFin) >= new Date(existingTask.dateDebut));
             if (hasOverlap) {
                 isBusy = true;
-                break; // Inutile de vérifier les autres tâches de cet utilisateur
+                break;
             }
         }
 
         if (!isBusy) {
-            eligibleCandidates.push(user);
+            eligibleList.push(user);
         }
     }
 
-    if (eligibleCandidates.length === 0) return null;
-
-    // 3. Parmi ceux qui sont LIBRES, appliquer le Tour de Rôle
-    // On prend celui qui a la "dernierAffection" la plus ancienne
-    eligibleCandidates.sort((a, b) => {
+    // 3. Trier par "Tour de Rôle" (les plus anciens en premier)
+    eligibleList.sort((a, b) => {
         const dateA = a.dernierAffection ? new Date(a.dernierAffection).getTime() : 0;
         const dateB = b.dernierAffection ? new Date(b.dernierAffection).getTime() : 0;
         return dateA - dateB;
     });
 
-    return eligibleCandidates[0];
+    return eligibleList; 
+
 };
 
-//================Affectation automatisé par IA================//
+//Affectation automatisé par IA
 
 exports.findUserByIA = async (newTask) => {
     // 1. Récupérer les candidats de base (Spécialité + Grade)

@@ -10,7 +10,7 @@ exports.createAssignment = async (req, res) => {
     try {
         const { taskId, userId, mode, vehicleId } = req.body;
 
-        // 1. Vérifier si la tâche existe
+        
         const task = await Task.findById(taskId);
         if (!task) {
             return res.status(404).json({ message: "Tâche non trouvée" });
@@ -19,19 +19,25 @@ exports.createAssignment = async (req, res) => {
         let finalUserId = userId;
         let rapport = "Affectation manuelle effectuée par l'administrateur.";
 
-        // 2. Gestion du mode Semi-Automatique (Algorithme Tour de Rôle)
-        if (mode === 'semi-auto') {
-            const chosenUser = await findUserByTourDeRole(task);
-            if (!chosenUser || chosenUser.role !== 'auditeur') {
-                return res.status(400).json({ 
-                    message: "Aucun auditeur disponible (conflit d'horaire ou critères de spécialité/grade non remplis)" 
+        
+       if (mode === 'semi-auto' && !userId) {
+            const candidates = await findUserByTourDeRole(task);
+            
+            if (candidates.length === 0) {
+                return res.status(200).json({ 
+                    success: false, 
+                    message: "Aucun auditeur disponible pour ces dates/critères",
+                    candidates: [] 
                 });
             }
-            finalUserId = chosenUser._id;
-            rapport = `Choisi automatiquement par l'algorithme de Tour de Rôle. Dernier travail : ${chosenUser.dernierAffection || 'Aucun'}`;
-        }
 
-        // 3. Gestion du Véhicule (si la tâche en a besoin)
+            return res.status(200).json({ 
+                success: true, 
+                message: `${candidates.length} auditeurs trouvés par l'algorithme`,
+                candidates: candidates 
+            });
+        }
+        
         if (task.besoinVehicule) {
             if (!vehicleId) {
                 return res.status(400).json({ message: "Cette tâche nécessite un véhicule. Veuillez en sélectionner un." });
@@ -307,5 +313,41 @@ exports.deleteAssignment = async (req, res) => {
         res.json({ message: "Affectation annulée et véhicule libéré." });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Proposer une liste d'auditeurs éligibles (Tour de rôle)
+// @route   GET /api/assignments/propose/:taskId
+exports.getProposals = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+
+        // 1. Trouver la tâche
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: "Tâche non trouvée" });
+        }
+
+        // 2. Appeler l'algorithme (il doit retourner la liste triée des candidats libres)
+        const candidates = await findUserByTourDeRole(task); 
+
+        // 3. Logique de retour demandée
+        if (!candidates || candidates.length === 0) {
+            return res.status(200).json({ 
+                success: false, 
+                message: "Aucun auditeur disponible pour ces dates/critères",
+                candidates: [] 
+            });
+        }
+
+        return res.status(200).json({ 
+            success: true, 
+            message: `${candidates.length} auditeurs trouvés par l'algorithme`,
+            candidates: candidates 
+        });
+
+    } catch (error) {
+        console.error("Erreur proposition :", error);
+        res.status(500).json({ message: "Erreur serveur lors de la recherche de candidats" });
     }
 };
